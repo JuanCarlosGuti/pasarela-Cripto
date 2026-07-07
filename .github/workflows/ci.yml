@@ -1,0 +1,27 @@
+# CI del proyecto (T-004): ./mvnw verify en cada push.
+# Corre pruebas unitarias, de integración (Testcontainers) y ArchUnit;
+# si cualquiera falla, la rama no puede mergearse a main (protección de rama).
+name: ci
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: JDK 25 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Verify (tests + ArchUnit + JaCoCo)
+        run: ./mvnw --batch-mode verify
