@@ -54,7 +54,7 @@ violación de fronteras sobreviva a un `verify`.
 - **Dado** una clase de dominio que importe `jakarta.persistence`, **cuando** corre
   `verify`, **entonces** la build **falla**.
 
-### ⬜ T-004 — CI: verify en cada push
+### ✅ T-004 — CI: verify en cada push
 **Como** Dev **quiero** GitHub Actions ejecutando `./mvnw verify` (con Testcontainers)
 en cada push **para** que `develop` y `main` no puedan degradarse sin aviso.
 
