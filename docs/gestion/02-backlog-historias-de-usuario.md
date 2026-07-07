@@ -19,13 +19,13 @@
 
 ## Épica E0 — Fundaciones técnicas *(Sprint 0 / Fase 0)*
 
-### ⬜ T-001 — Esqueleto Spring Boot con estructura hexagonal
+### 🔵 T-001 — Esqueleto Spring Boot con estructura hexagonal
 **Como** Dev **quiero** el proyecto Spring Boot 3 con la estructura de paquetes
 hexagonal **para** construir todo lo demás sobre fronteras verificadas.
 
 **Criterios de aceptación:**
 - **Dado** el repositorio clonado, **cuando** ejecuto `./mvnw verify`, **entonces**
-  compila en verde con Java 21+ y el wrapper de Maven incluido.
+  compila en verde con Java 25+ y el wrapper de Maven incluido.
 - **Dado** el árbol de paquetes, **entonces** existen `compartido`, `pagos`,
   `comercios`, `liquidaciones`, cada uno con `dominio/`, `aplicacion/`,
   `infraestructura/`, y `PagosApplication.java` es el único `@SpringBootApplication`.
