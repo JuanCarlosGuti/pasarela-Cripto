@@ -33,7 +33,7 @@ hexagonal **para** construir todo lo demás sobre fronteras verificadas.
   (test) JUnit 5, Mockito, AssertJ, Testcontainers, ArchUnit, JaCoCo.
 - Se elimina la clase `Main.java` de la plantilla de IntelliJ.
 
-### ⬜ T-002 — Base de datos local con Docker Compose + Flyway
+### ✅ T-002 — Base de datos local con Docker Compose + Flyway
 **Como** Dev **quiero** PostgreSQL levantado con `docker compose up -d` y migraciones
 Flyway **para** que el entorno local sea reproducible en un comando.
 
