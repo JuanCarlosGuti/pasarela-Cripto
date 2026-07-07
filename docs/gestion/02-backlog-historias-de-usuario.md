@@ -44,7 +44,7 @@ Flyway **para** que el entorno local sea reproducible en un comando.
   defaults inocuos para local.
 - `GET /actuator/health` responde `UP` (incluye estado de la BD).
 
-### ⬜ T-003 — Guardián de arquitectura (ArchUnit)
+### ✅ T-003 — Guardián de arquitectura (ArchUnit)
 **Como** Dev **quiero** pruebas ArchUnit desde el día cero **para** que ninguna
 violación de fronteras sobreviva a un `verify`.
 
