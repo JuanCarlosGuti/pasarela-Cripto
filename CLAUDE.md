@@ -43,7 +43,7 @@ Si una tarea implicaría custodiar fondos, **detente y avísame** antes de conti
 
 ## 3. Stack técnico
 
-- **Backend:** Java 21+ · Spring Boot 3 · Maven
+- **Backend:** Java 25+ · Spring Boot 3 · Maven
 - **Persistencia:** PostgreSQL · Spring Data JPA · Flyway (migraciones)
 - **Frontend:** Angular (repositorio separado; este repo es el backend)
 - **Infra local:** Docker Compose (PostgreSQL)

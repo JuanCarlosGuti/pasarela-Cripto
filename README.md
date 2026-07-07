@@ -4,7 +4,7 @@
 > pesos colombianos (COP)** en su cuenta, sin tocar cripto ni asumir volatilidad.
 
 [![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)]()
-[![Java](https://img.shields.io/badge/Java-21+-orange)]()
+[![Java](https://img.shields.io/badge/Java-25+-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)]()
 [![Arquitectura](https://img.shields.io/badge/arquitectura-hexagonal-blue)]()
 
@@ -60,7 +60,7 @@ Ver [ADR-001](docs/adr/ADR-001-no-custodia.md).
 
 ## Stack técnico
 
-- **Backend:** Java 21+ · Spring Boot 3 · Maven
+- **Backend:** Java 25+ · Spring Boot 3 · Maven
 - **Persistencia:** PostgreSQL · Spring Data JPA · Flyway
 - **Frontend:** Angular (repositorio separado)
 - **Infra local:** Docker Compose
