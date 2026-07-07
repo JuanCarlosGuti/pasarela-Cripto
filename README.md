@@ -3,6 +3,7 @@
 > Pasarela que permite a comercios en Colombia **cobrar en criptomonedas y recibir
 > pesos colombianos (COP)** en su cuenta, sin tocar cripto ni asumir volatilidad.
 
+[![CI](https://github.com/JuanCarlosGuti/pasarela-Cripto/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/JuanCarlosGuti/pasarela-Cripto/actions/workflows/ci.yml)
 [![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)]()
 [![Java](https://img.shields.io/badge/Java-25+-orange)]()
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green)]()
