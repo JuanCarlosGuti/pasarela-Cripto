@@ -386,7 +386,7 @@ canción (el pago) suene perfecta y en segundos.
 
 ### El stack, en una línea (para el lector técnico)
 
-Java 21 / Spring Boot 3, arquitectura hexagonal con DDD, PostgreSQL, frontend Angular,
+Java 25 / Spring Boot 3, arquitectura hexagonal con DDD, PostgreSQL, frontend Angular,
 pruebas automatizadas (unitarias, integración con contenedores, verificación de
 arquitectura), CI/CD. Documentación técnica completa disponible en `docs/` para
 due diligence.

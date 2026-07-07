@@ -43,7 +43,7 @@ Si una tarea implicaría custodiar fondos, **detente y avísame** antes de conti
 
 ## 3. Stack técnico
 
-- **Backend:** Java 21+ · Spring Boot 3 · Maven
+- **Backend:** Java 25+ · Spring Boot 3 · Maven
 - **Persistencia:** PostgreSQL · Spring Data JPA · Flyway (migraciones)
 - **Frontend:** Angular (repositorio separado; este repo es el backend)
 - **Infra local:** Docker Compose (PostgreSQL)
@@ -193,8 +193,8 @@ Ante cualquier duda de diseño, **consulta primero estos documentos** antes de a
 
 - [x] Proyecto Spring Boot generado (Maven, paquete base `com.pasarela`)
 - [x] Documentación técnica y de negocio completa en `docs/`
-- [ ] **Fase 0:** pom.xml completo, estructura hexagonal de paquetes, compose.yaml
-      (PostgreSQL), Flyway, ArchUnit, healthcheck, CI
+- [x] **Fase 0:** pom.xml completo, estructura hexagonal de paquetes, compose.yaml
+      (PostgreSQL), Flyway, ArchUnit, healthcheck, CI (Sprint 0 cerrado: `v0.0.1`)
 - [ ] **Fase 1:** dominio de `OrdenDePago` (VOs, máquina de estados, tests)
 - [ ] **Fase 2:** persistencia de la orden (puerto + JPA + Testcontainers)
 - [ ] **Fase 3:** comercios y onboarding + seguridad JWT

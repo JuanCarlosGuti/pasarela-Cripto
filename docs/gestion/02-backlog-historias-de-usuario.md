@@ -19,13 +19,13 @@
 
 ## Épica E0 — Fundaciones técnicas *(Sprint 0 / Fase 0)*
 
-### ⬜ T-001 — Esqueleto Spring Boot con estructura hexagonal
+### ✅ T-001 — Esqueleto Spring Boot con estructura hexagonal
 **Como** Dev **quiero** el proyecto Spring Boot 3 con la estructura de paquetes
 hexagonal **para** construir todo lo demás sobre fronteras verificadas.
 
 **Criterios de aceptación:**
 - **Dado** el repositorio clonado, **cuando** ejecuto `./mvnw verify`, **entonces**
-  compila en verde con Java 21+ y el wrapper de Maven incluido.
+  compila en verde con Java 25+ y el wrapper de Maven incluido.
 - **Dado** el árbol de paquetes, **entonces** existen `compartido`, `pagos`,
   `comercios`, `liquidaciones`, cada uno con `dominio/`, `aplicacion/`,
   `infraestructura/`, y `PagosApplication.java` es el único `@SpringBootApplication`.
@@ -33,7 +33,7 @@ hexagonal **para** construir todo lo demás sobre fronteras verificadas.
   (test) JUnit 5, Mockito, AssertJ, Testcontainers, ArchUnit, JaCoCo.
 - Se elimina la clase `Main.java` de la plantilla de IntelliJ.
 
-### ⬜ T-002 — Base de datos local con Docker Compose + Flyway
+### ✅ T-002 — Base de datos local con Docker Compose + Flyway
 **Como** Dev **quiero** PostgreSQL levantado con `docker compose up -d` y migraciones
 Flyway **para** que el entorno local sea reproducible en un comando.
 
@@ -44,7 +44,7 @@ Flyway **para** que el entorno local sea reproducible en un comando.
   defaults inocuos para local.
 - `GET /actuator/health` responde `UP` (incluye estado de la BD).
 
-### ⬜ T-003 — Guardián de arquitectura (ArchUnit)
+### ✅ T-003 — Guardián de arquitectura (ArchUnit)
 **Como** Dev **quiero** pruebas ArchUnit desde el día cero **para** que ninguna
 violación de fronteras sobreviva a un `verify`.
 
@@ -54,7 +54,7 @@ violación de fronteras sobreviva a un `verify`.
 - **Dado** una clase de dominio que importe `jakarta.persistence`, **cuando** corre
   `verify`, **entonces** la build **falla**.
 
-### ⬜ T-004 — CI: verify en cada push
+### ✅ T-004 — CI: verify en cada push
 **Como** Dev **quiero** GitHub Actions ejecutando `./mvnw verify` (con Testcontainers)
 en cada push **para** que `develop` y `main` no puedan degradarse sin aviso.
 
