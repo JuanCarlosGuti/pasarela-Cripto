@@ -19,7 +19,7 @@
 
 ## Épica E0 — Fundaciones técnicas *(Sprint 0 / Fase 0)*
 
-### 🔵 T-001 — Esqueleto Spring Boot con estructura hexagonal
+### ✅ T-001 — Esqueleto Spring Boot con estructura hexagonal
 **Como** Dev **quiero** el proyecto Spring Boot 3 con la estructura de paquetes
 hexagonal **para** construir todo lo demás sobre fronteras verificadas.
 
