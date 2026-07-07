@@ -70,6 +70,9 @@ Ver [ADR-001](docs/adr/ADR-001-no-custodia.md).
 ## Arranque rápido (local)
 
 ```bash
+# 0. Crear las variables de entorno locales (una sola vez)
+cp .env.example .env    # y ajusta los valores si quieres
+
 # 1. Levantar la base de datos
 docker compose up -d
 

@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-pagos}
       POSTGRES_USER: ${DB_USERNAME:-pagos}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-pagos_local}
+      # Sin default: la contraseña vive solo en .env (ver .env.example)
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD - copia .env.example a .env}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
