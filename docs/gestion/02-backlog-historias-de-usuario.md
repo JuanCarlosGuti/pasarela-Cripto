@@ -69,7 +69,7 @@ en cada push **para** que `develop` y `main` no puedan degradarse sin aviso.
 
 ## Épica E1 — Núcleo de dominio: Orden de Pago *(Sprint 1 / Fase 1)*
 
-### ⬜ HU-001 — Value Objects del dinero
+### ✅ HU-001 — Value Objects del dinero
 **Como** Dev (en nombre del negocio) **quiero** VOs `Dinero`, `Moneda`, `Porcentaje`
 **para** que ningún monto viaje como primitivo sin validar.
 
