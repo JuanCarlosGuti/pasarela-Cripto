@@ -313,6 +313,55 @@ class OrdenDePagoTest {
 	}
 
 	@Nested
+	class Reconstitucion {
+
+		@Test
+		void reconstituir_restauraEstadoEHistorialTalCualVienenDePersistencia() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.FALLIDA);
+
+			OrdenDePago reconstituida = OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), original.historial());
+
+			assertThat(reconstituida.id()).isEqualTo(original.id());
+			assertThat(reconstituida.estado()).isEqualTo(EstadoOrden.FALLIDA);
+			assertThat(reconstituida.historial()).isEqualTo(original.historial());
+		}
+
+		@Test
+		void reconstituir_conEstadoOHistorialNulos_lanzaExcepcion() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.PENDIENTE_PAGO);
+
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					null, original.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), null))
+					.isInstanceOf(OrdenInvalidaException.class);
+		}
+
+		@Test
+		void unaOrdenReconstituida_sigueRespetandoLaMaquinaDeEstados() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.PAGO_DETECTADO);
+			OrdenDePago reconstituida = OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), original.historial());
+
+			reconstituida.marcarComoConvertida(DENTRO_DE_LA_VENTANA);
+
+			assertThat(reconstituida.estado()).isEqualTo(EstadoOrden.CONVERTIDA);
+			assertThatThrownBy(() -> reconstituida.expirar(DESPUES_DE_EXPIRAR))
+					.isInstanceOf(TransicionDeEstadoInvalidaException.class);
+		}
+	}
+
+	@Nested
 	class Identidad {
 
 		@Test
