@@ -98,7 +98,7 @@ válidas **para** que jamás exista un cobro en estado inconsistente.
   recorre el producto cartesiano estado × evento.
 - No existe `setEstado` público; el historial de transiciones queda registrado.
 
-### 🔵 HU-003 — Expiración y comisión de la orden
+### ✅ HU-003 — Expiración y comisión de la orden
 **Como** Plataforma **quiero** calcular la expiración y la comisión de cada orden
 **para** proteger el cobro y registrar mi ingreso.
 
