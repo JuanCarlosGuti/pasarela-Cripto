@@ -1,0 +1,18 @@
+meta {
+  name: Consulta pública por referencia
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/pagos/{{referenciaPago}}
+  body: none
+  auth: none
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 3 (HU-009).
+
+  Endpoint público para la página de pago del pagador: expone SOLO estado y
+  monto — nada del comercio ni datos internos (contrato probado en tests).
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Crear orden de pago (QR)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/ordenes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "monto": 40000
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("ordenId", res.getBody().id);
+    bru.setEnvVar("referenciaPago", res.getBody().referencia);
+  }
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 3 (HU-008).
+
+  Requiere comercio VERIFICADO autenticado.
+  201 → contenido del QR, deeplink, referencia única y expiraEn;
+  la orden queda PENDIENTE_PAGO.
+
+  El script guarda `ordenId` y `referenciaPago` para las peticiones
+  siguientes (consulta y webhook).
+
+  Caminos tristes: comercio PENDIENTE/SUSPENDIDO → 403; monto ≤ 0 o que
+  viola límites → 400/422 sin llamar al proveedor.
+}
