@@ -112,10 +112,12 @@
 					<targetClasses>
 						<param>com.pasarela.compartido.dominio.*</param>
 						<param>com.pasarela.pagos.dominio.*</param>
+						<param>com.pasarela.comercios.dominio.*</param>
 					</targetClasses>
 					<targetTests>
 						<param>com.pasarela.compartido.dominio.*</param>
 						<param>com.pasarela.pagos.dominio.*</param>
+						<param>com.pasarela.comercios.dominio.*</param>
 					</targetTests>
 					<mutationThreshold>100</mutationThreshold>
 					<timestampedReports>false</timestampedReports>
