@@ -18,6 +18,8 @@
 		<java.version>25</java.version>
 		<archunit.version>1.4.1</archunit.version>
 		<jacoco.version>0.8.13</jacoco.version>
+		<pitest.version>1.19.1</pitest.version>
+		<pitest-junit5.version>1.2.2</pitest-junit5.version>
 	</properties>
 
 	<dependencies>
@@ -86,6 +88,39 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<!--
+				PIT (mutation testing) sobre el dominio: mide si los tests detectan
+				bugs de verdad, no solo si ejecutan líneas. Se corre bajo demanda:
+				./mvnw -Ppit clean test-compile org.pitest:pitest-maven:mutationCoverage
+				Reporte en target/pit-reports/index.html
+				(El perfil "pit" compila con release 21 porque PIT 1.19 aún no lee
+				bytecode de Java 25; el dominio es Java puro compatible. Retirar el
+				perfil cuando PIT soporte class file 69.)
+			-->
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>${pitest.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>${pitest-junit5.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>com.pasarela.compartido.dominio.*</param>
+						<param>com.pasarela.pagos.dominio.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>com.pasarela.compartido.dominio.*</param>
+						<param>com.pasarela.pagos.dominio.*</param>
+					</targetTests>
+					<mutationThreshold>100</mutationThreshold>
+					<timestampedReports>false</timestampedReports>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -107,5 +142,15 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!-- Perfil para PIT: ver comentario del plugin pitest-maven -->
+		<profile>
+			<id>pit</id>
+			<properties>
+				<java.version>21</java.version>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

@@ -137,6 +137,17 @@ class OrdenDePagoTest {
 			assertThat(ultima.momento()).isNotNull();
 		}
 
+		@Test
+		void transicionar_conMomentoNulo_lanzaExcepcionYNoCambiaNada() {
+			OrdenDePago orden = ordenNueva();
+
+			assertThatThrownBy(() -> orden.registrarCobroEnProveedor(null))
+					.isInstanceOf(OrdenInvalidaException.class);
+
+			assertThat(orden.estado()).isEqualTo(EstadoOrden.CREADA);
+			assertThat(orden.historial()).isEmpty();
+		}
+
 		@ParameterizedTest(name = "{0} + {1} se rechaza")
 		@MethodSource("transicionesInvalidas")
 		void transicionInvalida_lanzaExcepcionYNoCambiaNada(EstadoOrden origen, Accion accion) {
@@ -330,18 +341,32 @@ class OrdenDePagoTest {
 		}
 
 		@Test
-		void reconstituir_conEstadoOHistorialNulos_lanzaExcepcion() {
-			OrdenDePago original = ordenEnEstado(EstadoOrden.PENDIENTE_PAGO);
+		void reconstituir_conCualquierDatoNulo_lanzaExcepcion() {
+			OrdenDePago o = ordenEnEstado(EstadoOrden.PENDIENTE_PAGO);
 
-			assertThatThrownBy(() -> OrdenDePago.reconstituir(
-					original.id(), original.comercioId(), original.monto(),
-					original.referencia(), original.creadaEn(), original.expiraEn(),
-					null, original.historial()))
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(null, o.comercioId(), o.monto(),
+					o.referencia(), o.creadaEn(), o.expiraEn(), o.estado(), o.historial()))
 					.isInstanceOf(OrdenInvalidaException.class);
-			assertThatThrownBy(() -> OrdenDePago.reconstituir(
-					original.id(), original.comercioId(), original.monto(),
-					original.referencia(), original.creadaEn(), original.expiraEn(),
-					original.estado(), null))
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), null, o.monto(),
+					o.referencia(), o.creadaEn(), o.expiraEn(), o.estado(), o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), null,
+					o.referencia(), o.creadaEn(), o.expiraEn(), o.estado(), o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), o.monto(),
+					null, o.creadaEn(), o.expiraEn(), o.estado(), o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), o.monto(),
+					o.referencia(), null, o.expiraEn(), o.estado(), o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), o.monto(),
+					o.referencia(), o.creadaEn(), null, o.estado(), o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), o.monto(),
+					o.referencia(), o.creadaEn(), o.expiraEn(), null, o.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(o.id(), o.comercioId(), o.monto(),
+					o.referencia(), o.creadaEn(), o.expiraEn(), o.estado(), null))
 					.isInstanceOf(OrdenInvalidaException.class);
 		}
 
@@ -371,6 +396,18 @@ class OrdenDePagoTest {
 
 			assertThat(orden).isEqualTo(orden);
 			assertThat(orden).isNotEqualTo(otra);
+		}
+
+		@Test
+		void elHashCode_sigueAlId() {
+			OrdenDePago orden = ordenNueva();
+			OrdenDePago mismaOrden = OrdenDePago.reconstituir(
+					orden.id(), orden.comercioId(), orden.monto(), orden.referencia(),
+					orden.creadaEn(), orden.expiraEn(), orden.estado(), orden.historial());
+			OrdenDePago otra = ordenNueva();
+
+			assertThat(orden).hasSameHashCodeAs(mismaOrden);
+			assertThat(orden.hashCode()).isNotEqualTo(otra.hashCode());
 		}
 	}
 
