@@ -115,7 +115,7 @@ válidas **para** que jamás exista un cobro en estado inconsistente.
 
 ## Épica E2 — Persistencia de la Orden *(Sprint 1 / Fase 2)*
 
-### ⬜ T-005 — Adaptador JPA de OrdenDePago
+### 🔵 T-005 — Adaptador JPA de OrdenDePago
 **Como** Dev **quiero** persistir y recuperar órdenes vía el puerto
 `OrdenDePagoRepositorio` **para** conectar el dominio a PostgreSQL sin contaminarlo.
 

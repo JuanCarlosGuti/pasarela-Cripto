@@ -65,6 +65,29 @@ public class OrdenDePago {
 		return new OrdenDePago(IdOrden.generar(), comercioId, monto, referencia, creadaEn, expiraEn);
 	}
 
+	/**
+	 * Rehidrata una orden desde la persistencia: estado e historial se
+	 * restauran tal cual, sin re-validar transiciones (ya fueron validadas
+	 * cuando ocurrieron). Solo para adaptadores de persistencia — el resto
+	 * del código crea órdenes con {@link #crear}.
+	 */
+	public static OrdenDePago reconstituir(IdOrden id, IdComercio comercioId, Dinero monto,
+			ReferenciaPago referencia, Instant creadaEn, Instant expiraEn,
+			EstadoOrden estado, List<TransicionEstado> historial) {
+		validarObligatorio(id, "el id");
+		validarObligatorio(comercioId, "el comercio");
+		validarObligatorio(monto, "el monto");
+		validarObligatorio(referencia, "la referencia de pago");
+		validarObligatorio(creadaEn, "la fecha de creación");
+		validarObligatorio(expiraEn, "la fecha de expiración");
+		validarObligatorio(estado, "el estado");
+		validarObligatorio(historial, "el historial");
+		OrdenDePago orden = new OrdenDePago(id, comercioId, monto, referencia, creadaEn, expiraEn);
+		orden.estado = estado;
+		orden.historial.addAll(historial);
+		return orden;
+	}
+
 	/** El cobro quedó registrado en el proveedor (QR generado): CREADA → PENDIENTE_PAGO. */
 	public void registrarCobroEnProveedor(Instant ahora) {
 		transicionar(EstadoOrden.PENDIENTE_PAGO, ahora, null);
