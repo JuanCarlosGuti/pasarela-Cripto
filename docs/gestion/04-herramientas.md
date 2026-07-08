@@ -41,7 +41,7 @@
 | Herramienta | Para qué | Costo | Cuándo |
 |---|---|---|---|
 | **springdoc-openapi** | Documentación viva de la API (Swagger UI) — el contrato para el frontend Angular | Libre | Sprint 3 |
-| **Bruno** | Cliente API open source (alternativa a Postman); las colecciones se versionan **en el repo** como archivos — coherente con "nada vive fuera de git" | Libre | Sprint 2 |
+| **Bruno** | Cliente API open source (alternativa a Postman); las colecciones se versionan **en el repo** como archivos — coherente con "nada vive fuera de git". Colección: `coleccion-api/` | Libre | Adoptada (Sprint 1) |
 | **DBeaver Community** | Cliente universal de BD | Libre | Sprint 0 |
 | **Flyway Community** | Migraciones versionadas | Libre | Sprint 0 |
 

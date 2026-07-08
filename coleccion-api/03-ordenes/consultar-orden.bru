@@ -1,0 +1,23 @@
+meta {
+  name: Consultar orden (dueño)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/ordenes/{{ordenId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 3 (HU-009).
+
+  Devuelve estado, monto y timestamps de transición de la orden.
+  Solo el comercio dueño: otro comercio debe recibir 404 (no filtrar
+  existencia).
+}

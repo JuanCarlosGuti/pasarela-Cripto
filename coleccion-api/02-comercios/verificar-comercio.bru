@@ -1,0 +1,31 @@
+meta {
+  name: Verificar comercio (admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/comercios/{{comercioId}}/verificacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "decision": "APROBAR"
+  }
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 2 (HU-005).
+
+  Solo rol ADMIN (con rol COMERCIO debe responder 403).
+  APROBAR → VERIFICADO y puedeCobrar() = true.
+  RECHAZAR / SUSPENDER requieren campo "motivo" (auditable).
+
+  Define la variable `comercioId` con el id devuelto por "Registrar comercio".
+}

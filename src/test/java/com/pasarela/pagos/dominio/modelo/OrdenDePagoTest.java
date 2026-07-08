@@ -234,6 +234,11 @@ class OrdenDePagoTest {
 		}
 
 		@Test
+		void estaExpirada_unSegundoAntesDelLimite_esFalse() {
+			assertThat(ordenNueva().estaExpirada(EXPIRA_EN.minusSeconds(1))).isFalse();
+		}
+
+		@Test
 		void estaExpirada_exactamenteEnElLimite_esFalse() {
 			assertThat(ordenNueva().estaExpirada(EXPIRA_EN)).isFalse();
 		}
@@ -304,6 +309,55 @@ class OrdenDePagoTest {
 			assertThatThrownBy(() -> historial.add(
 					TransicionEstado.de(EstadoOrden.CREADA, EstadoOrden.PENDIENTE_PAGO, CREADA_EN)))
 					.isInstanceOf(UnsupportedOperationException.class);
+		}
+	}
+
+	@Nested
+	class Reconstitucion {
+
+		@Test
+		void reconstituir_restauraEstadoEHistorialTalCualVienenDePersistencia() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.FALLIDA);
+
+			OrdenDePago reconstituida = OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), original.historial());
+
+			assertThat(reconstituida.id()).isEqualTo(original.id());
+			assertThat(reconstituida.estado()).isEqualTo(EstadoOrden.FALLIDA);
+			assertThat(reconstituida.historial()).isEqualTo(original.historial());
+		}
+
+		@Test
+		void reconstituir_conEstadoOHistorialNulos_lanzaExcepcion() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.PENDIENTE_PAGO);
+
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					null, original.historial()))
+					.isInstanceOf(OrdenInvalidaException.class);
+			assertThatThrownBy(() -> OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), null))
+					.isInstanceOf(OrdenInvalidaException.class);
+		}
+
+		@Test
+		void unaOrdenReconstituida_sigueRespetandoLaMaquinaDeEstados() {
+			OrdenDePago original = ordenEnEstado(EstadoOrden.PAGO_DETECTADO);
+			OrdenDePago reconstituida = OrdenDePago.reconstituir(
+					original.id(), original.comercioId(), original.monto(),
+					original.referencia(), original.creadaEn(), original.expiraEn(),
+					original.estado(), original.historial());
+
+			reconstituida.marcarComoConvertida(DENTRO_DE_LA_VENTANA);
+
+			assertThat(reconstituida.estado()).isEqualTo(EstadoOrden.CONVERTIDA);
+			assertThatThrownBy(() -> reconstituida.expirar(DESPUES_DE_EXPIRAR))
+					.isInstanceOf(TransicionDeEstadoInvalidaException.class);
 		}
 	}
 
