@@ -234,6 +234,11 @@ class OrdenDePagoTest {
 		}
 
 		@Test
+		void estaExpirada_unSegundoAntesDelLimite_esFalse() {
+			assertThat(ordenNueva().estaExpirada(EXPIRA_EN.minusSeconds(1))).isFalse();
+		}
+
+		@Test
 		void estaExpirada_exactamenteEnElLimite_esFalse() {
 			assertThat(ordenNueva().estaExpirada(EXPIRA_EN)).isFalse();
 		}
