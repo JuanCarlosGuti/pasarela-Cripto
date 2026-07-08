@@ -177,7 +177,7 @@ maestro (abogado fintech, contratos).
 | Sprint | Estado | Tag |
 |--------|--------|-----|
 | 0 — Fundaciones | ✅ cerrado | `v0.0.1` |
-| 1 — Dominio + persistencia | ⬜ pendiente | — |
+| 1 — Dominio + persistencia | 🔵 en curso | — |
 | 2 — Comercios + seguridad | ⬜ pendiente | — |
 | 3 — Cobro QR simulado | ⬜ pendiente | — |
 | 4 — Webhook + idempotencia | ⬜ pendiente | — |
