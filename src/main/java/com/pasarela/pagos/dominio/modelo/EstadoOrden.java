@@ -1,0 +1,35 @@
+package com.pasarela.pagos.dominio.modelo;
+
+/**
+ * Estados del ciclo de vida de una orden de pago. La matriz de transiciones
+ * válidas (docs/04-modelo-de-dominio.md) vive aquí, en un solo lugar: todo lo
+ * que {@link #puedeTransicionarA(EstadoOrden)} no permita, se rechaza.
+ */
+public enum EstadoOrden {
+
+	CREADA,
+	PENDIENTE_PAGO,
+	PAGO_DETECTADO,
+	CONVERTIDA,
+	LIQUIDADA,
+	EXPIRADA,
+	FALLIDA,
+	EN_REVISION;
+
+	public boolean puedeTransicionarA(EstadoOrden destino) {
+		return switch (this) {
+			case CREADA -> destino == PENDIENTE_PAGO;
+			case PENDIENTE_PAGO -> destino == PAGO_DETECTADO || destino == EXPIRADA;
+			case PAGO_DETECTADO -> destino == CONVERTIDA || destino == FALLIDA;
+			case CONVERTIDA -> destino == LIQUIDADA;
+			case FALLIDA -> destino == EN_REVISION;
+			case LIQUIDADA, EXPIRADA, EN_REVISION -> false;
+		};
+	}
+
+	/** Terminal: la orden ya no admite ninguna transición. */
+	public boolean esTerminal() {
+		return this == LIQUIDADA || this == EXPIRADA || this == EN_REVISION;
+	}
+
+}
