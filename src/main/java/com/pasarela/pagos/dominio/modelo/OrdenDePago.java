@@ -111,7 +111,6 @@ public class OrdenDePago {
 
 	/** Venció la ventana de pago sin que llegara el pago: PENDIENTE_PAGO → EXPIRADA. */
 	public void expirar(Instant ahora) {
-		validarTransicionA(EstadoOrden.EXPIRADA);
 		if (!estaExpirada(ahora)) {
 			throw new TransicionDeEstadoInvalidaException(
 					"No se puede expirar la orden antes de su vencimiento (" + expiraEn + ")");
@@ -154,7 +153,8 @@ public class OrdenDePago {
 
 	private void transicionar(EstadoOrden nuevoEstado, Instant momento, String motivo) {
 		validarTransicionA(nuevoEstado);
-		validarObligatorio(momento, "el momento de la transición");
+		// el momento nulo lo rechaza el propio constructor de TransicionEstado,
+		// antes de tocar historial o estado
 		historial.add(new TransicionEstado(estado, nuevoEstado, momento, motivo));
 		estado = nuevoEstado;
 	}
