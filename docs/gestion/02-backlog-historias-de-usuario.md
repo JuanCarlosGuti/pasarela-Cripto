@@ -81,7 +81,7 @@ en cada push **para** que `develop` y `main` no puedan degradarse sin aviso.
   documentado y probado (banker's rounding o el que se decida — dejarlo explícito).
 - Son `record`s inmutables, sin Spring/JPA (ArchUnit lo garantiza).
 
-### ⬜ HU-002 — Máquina de estados de la Orden de Pago
+### 🔵 HU-002 — Máquina de estados de la Orden de Pago
 **Como** Comercio **quiero** que una orden solo pueda avanzar por transiciones
 válidas **para** que jamás exista un cobro en estado inconsistente.
 
