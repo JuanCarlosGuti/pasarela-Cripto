@@ -1,0 +1,26 @@
+meta {
+  name: Salud del sistema
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/actuator/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq UP
+}
+
+docs {
+  ✅ DISPONIBLE DESDE SPRINT 0.
+
+  Verifica que la app está arriba y conectada a PostgreSQL.
+
+  Prerrequisitos:
+  1. `docker compose up -d` (levanta PostgreSQL)
+  2. `./mvnw spring-boot:run`
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Webhook de pago (proveedor simulado)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/webhooks/simulado
+  body: json
+  auth: none
+}
+
+headers {
+  X-Firma: {{firmaWebhook}}
+}
+
+body:json {
+  {
+    "idEvento": "evt-000001",
+    "tipo": "PAGO_RECIBIDO",
+    "referencia": "{{referenciaPago}}",
+    "monto": 40000,
+    "moneda": "USDT",
+    "timestamp": "2026-07-08T10:05:00Z"
+  }
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 4 (HU-010/011/012).
+
+  Simula la notificación de pago del proveedor. Flujo interno obligatorio:
+  firma → guardar evento crudo → idempotencia → interpretar → confirmar →
+  notificar. La orden pasa a PAGO_DETECTADO.
+
+  Pruebas manuales interesantes desde aquí:
+  - Reenviar EXACTAMENTE el mismo cuerpo (mismo idEvento) → 200 pero sin
+    doble confirmación (idempotencia estricta, HU-011).
+  - X-Firma inválida → 401 y la orden no cambia.
+  - Cambiar "monto" → la orden pasa a EN_REVISION.
+  - Referencia inexistente → 200, evento guardado y marcado para revisión.
+}

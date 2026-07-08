@@ -1,0 +1,34 @@
+meta {
+  name: Registrar comercio
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/comercios
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "razonSocial": "Tienda La Esquina SAS",
+    "nit": "900123456-8",
+    "cuentaLiquidacion": {
+      "tipo": "NEQUI",
+      "numero": "3001234567",
+      "titular": "Tienda La Esquina SAS"
+    }
+  }
+}
+
+docs {
+  ⏳ PLANEADO — disponible al cerrar el Sprint 2 (HU-004).
+
+  201 → el comercio queda PENDIENTE (aún no puede cobrar).
+  Caminos tristes: NIT con dígito de verificación inválido → 400;
+  NIT duplicado → 409.
+
+  El NIT del ejemplo es ficticio: reemplázalo por uno con dígito de
+  verificación válido (algoritmo DIAN) cuando el endpoint exista.
+}
