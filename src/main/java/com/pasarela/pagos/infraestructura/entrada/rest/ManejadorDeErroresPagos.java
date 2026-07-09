@@ -2,6 +2,7 @@ package com.pasarela.pagos.infraestructura.entrada.rest;
 
 import com.pasarela.compartido.dominio.excepcion.MontoInvalidoException;
 import com.pasarela.pagos.dominio.excepcion.OrdenInvalidaException;
+import com.pasarela.pagos.dominio.excepcion.OrdenNoEncontradaException;
 import com.pasarela.pagos.dominio.excepcion.ProveedorDePagoNoDisponibleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +19,12 @@ public class ManejadorDeErroresPagos {
 	@ExceptionHandler({OrdenInvalidaException.class, MontoInvalidoException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ErrorResponse datosInvalidos(RuntimeException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(OrdenNoEncontradaException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorResponse noEncontrada(OrdenNoEncontradaException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 

@@ -15,9 +15,11 @@ auth:bearer {
 }
 
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 3 (HU-009).
+  ✅ DISPONIBLE DESDE HU-009 (Sprint 3).
 
-  Devuelve estado, monto y timestamps de transición de la orden.
-  Solo el comercio dueño: otro comercio debe recibir 404 (no filtrar
-  existencia).
+  Devuelve estado, monto, expiraEn y el historial de transiciones con sus
+  timestamps. Solo el comercio dueño (el ADMIN ve cualquiera): pedir la
+  orden de otro comercio responde 404, igual que una inexistente.
+
+  La variable `ordenId` la deja lista "Crear orden de pago (QR)".
 }

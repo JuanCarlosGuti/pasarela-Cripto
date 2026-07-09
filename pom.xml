@@ -20,6 +20,7 @@
 		<jacoco.version>0.8.13</jacoco.version>
 		<pitest.version>1.19.1</pitest.version>
 		<pitest-junit5.version>1.2.2</pitest-junit5.version>
+		<springdoc.version>2.8.6</springdoc.version>
 	</properties>
 
 	<dependencies>
@@ -47,6 +48,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<!-- Contrato OpenAPI vivo de la API (HU-009): /v3/api-docs y Swagger UI -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
