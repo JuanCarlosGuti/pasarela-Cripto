@@ -1,5 +1,7 @@
 package com.pasarela.pagos.dominio.puerto.salida;
 
+import com.pasarela.compartido.dominio.modelo.Dinero;
+import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.pagos.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
@@ -27,5 +29,12 @@ public interface OrdenDePagoRepositorio {
 	 * como vencida — mismo criterio que {@code OrdenDePago.estaExpirada}.
 	 */
 	List<OrdenDePago> buscarPendientesExpiradas(Instant ahora);
+
+	/**
+	 * Suma de las órdenes del comercio creadas en [desde, hasta) que
+	 * consumen cupo mensual (HU-007/HU-008): las pendientes y las pagadas;
+	 * las expiradas, fallidas y en revisión no cuentan.
+	 */
+	Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta);
 
 }

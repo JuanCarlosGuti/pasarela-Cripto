@@ -48,8 +48,13 @@ public class ConfiguracionDeSeguridadHttp {
 						.requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/comercios").permitAll()
+						// página de pago del pagador: pública por diseño (HU-009)
+						.requestMatchers(HttpMethod.GET, "/api/pagos/*").permitAll()
+						// contrato OpenAPI para el frontend Angular (HU-009)
+						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/comercios/*/limites").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.POST, "/api/ordenes").hasRole("COMERCIO")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 						jwt.jwtAuthenticationConverter(convertidorDeRoles())));
