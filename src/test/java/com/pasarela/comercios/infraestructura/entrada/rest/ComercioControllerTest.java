@@ -1,7 +1,10 @@
 package com.pasarela.comercios.infraestructura.entrada.rest;
 
+import com.pasarela.comercios.dominio.excepcion.ComercioNoEncontradoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioYaRegistradoException;
 import com.pasarela.comercios.dominio.excepcion.NitInvalidoException;
+import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
+import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase;
 import com.pasarela.comercios.dominio.modelo.Comercio;
 import com.pasarela.comercios.dominio.modelo.CuentaLiquidacion;
 import com.pasarela.comercios.dominio.modelo.Nit;
@@ -43,6 +46,9 @@ class ComercioControllerTest {
 
 	@MockitoBean
 	private RegistrarComercioUseCase registrarComercio;
+
+	@MockitoBean
+	private DecidirVerificacionUseCase decidirVerificacion;
 
 	@Test
 	void post_conDatosValidos_responde201ConUbicacionYEstadoPendiente() throws Exception {
@@ -104,6 +110,57 @@ class ComercioControllerTest {
 		mvc.perform(post("/api/comercios")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(sinRazonSocial))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void postVerificacion_aprobar_responde200ConElComercioVerificado() throws Exception {
+		Comercio verificado = comercioRegistrado();
+		verificado.verificar(Instant.parse("2026-07-08T15:00:00Z"));
+		when(decidirVerificacion.decidir(any())).thenReturn(verificado);
+
+		mvc.perform(post("/api/comercios/{id}/verificacion", verificado.id().valor())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"decision\": \"APROBAR\"}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.estadoVerificacion").value("VERIFICADO"))
+				// el motivo y la cuenta no se exponen en el contrato público
+				.andExpect(jsonPath("$.motivoDecision").doesNotExist())
+				.andExpect(jsonPath("$.cuentaLiquidacion").doesNotExist());
+	}
+
+	@Test
+	void postVerificacion_sobreComercioInexistente_responde404() throws Exception {
+		when(decidirVerificacion.decidir(any()))
+				.thenThrow(new ComercioNoEncontradoException("No existe un comercio con ese id"));
+
+		mvc.perform(post("/api/comercios/{id}/verificacion",
+						"3426c255-8bea-454b-9e1b-9aa923d8af98")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"decision\": \"APROBAR\"}"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void postVerificacion_conTransicionInvalida_responde409() throws Exception {
+		when(decidirVerificacion.decidir(any()))
+				.thenThrow(new VerificacionInvalidaException(
+						"No se puede suspender un comercio en estado PENDIENTE (se requiere VERIFICADO)"));
+
+		mvc.perform(post("/api/comercios/{id}/verificacion",
+						"3426c255-8bea-454b-9e1b-9aa923d8af98")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"decision\": \"SUSPENDER\", \"motivo\": \"actividad inusual\"}"))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.mensaje").isNotEmpty());
+	}
+
+	@Test
+	void postVerificacion_sinDecision_responde400_sinLlegarAlCasoDeUso() throws Exception {
+		mvc.perform(post("/api/comercios/{id}/verificacion",
+						"3426c255-8bea-454b-9e1b-9aa923d8af98")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"motivo\": \"sin decisión\"}"))
 				.andExpect(status().isBadRequest());
 	}
 

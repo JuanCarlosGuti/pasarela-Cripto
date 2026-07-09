@@ -45,6 +45,21 @@ class ComercioRepositorioJpaTest {
 	}
 
 	@Test
+	void unComercioConDecisionDeVerificacion_conservaMotivoYMomento() {
+		Comercio comercio = comercio("890903938-8");
+		comercio.verificar(AHORA.plusSeconds(60));
+		comercio.suspender("actividad inusual", AHORA.plusSeconds(120));
+
+		repositorio.guardar(comercio);
+		Comercio recuperado = repositorio.buscarPorId(comercio.id()).orElseThrow();
+
+		assertThat(recuperado.estadoVerificacion()).isEqualTo(EstadoVerificacion.SUSPENDIDO);
+		assertThat(recuperado.motivoDecision()).isEqualTo("actividad inusual");
+		assertThat(recuperado.decisionEn()).isEqualTo(AHORA.plusSeconds(120));
+		assertThat(recuperado.puedeCobrar()).isFalse();
+	}
+
+	@Test
 	void buscarPorNit_devuelveElComercioCorrecto_noOtro() {
 		Comercio buscado = comercio("899999068-1");
 		Comercio otro = comercio("890903938-8"); // falso positivo potencial

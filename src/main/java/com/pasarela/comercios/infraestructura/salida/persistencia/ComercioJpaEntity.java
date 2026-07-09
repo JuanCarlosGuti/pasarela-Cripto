@@ -37,12 +37,19 @@ public class ComercioJpaEntity {
 	@Column(name = "registrado_en", nullable = false)
 	private Instant registradoEn;
 
+	@Column(name = "motivo_decision", length = 500)
+	private String motivoDecision;
+
+	@Column(name = "decision_en")
+	private Instant decisionEn;
+
 	protected ComercioJpaEntity() {
 		// requerido por JPA
 	}
 
 	ComercioJpaEntity(UUID id, String razonSocial, String nit, String estadoVerificacion,
-			String cuentaTipo, String cuentaNumero, String cuentaTitular, Instant registradoEn) {
+			String cuentaTipo, String cuentaNumero, String cuentaTitular, Instant registradoEn,
+			String motivoDecision, Instant decisionEn) {
 		this.id = id;
 		this.razonSocial = razonSocial;
 		this.nit = nit;
@@ -51,6 +58,8 @@ public class ComercioJpaEntity {
 		this.cuentaNumero = cuentaNumero;
 		this.cuentaTitular = cuentaTitular;
 		this.registradoEn = registradoEn;
+		this.motivoDecision = motivoDecision;
+		this.decisionEn = decisionEn;
 	}
 
 	UUID id() {
@@ -83,6 +92,14 @@ public class ComercioJpaEntity {
 
 	Instant registradoEn() {
 		return registradoEn;
+	}
+
+	String motivoDecision() {
+		return motivoDecision;
+	}
+
+	Instant decisionEn() {
+		return decisionEn;
 	}
 
 }

@@ -1,8 +1,10 @@
 package com.pasarela.comercios.infraestructura.entrada.rest;
 
 import com.pasarela.comercios.dominio.excepcion.ComercioInvalidoException;
+import com.pasarela.comercios.dominio.excepcion.ComercioNoEncontradoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioYaRegistradoException;
 import com.pasarela.comercios.dominio.excepcion.NitInvalidoException;
+import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,9 +27,15 @@ public class ManejadorDeErroresComercios {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 
-	@ExceptionHandler(ComercioYaRegistradoException.class)
+	@ExceptionHandler({ComercioYaRegistradoException.class, VerificacionInvalidaException.class})
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public ErrorResponse duplicado(ComercioYaRegistradoException excepcion) {
+	public ErrorResponse conflictoDeEstado(RuntimeException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(ComercioNoEncontradoException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorResponse noEncontrado(ComercioNoEncontradoException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 

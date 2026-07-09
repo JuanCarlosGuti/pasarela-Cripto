@@ -21,7 +21,9 @@ public class ComercioJpaMapper {
 				comercio.cuentaLiquidacion().tipo().name(),
 				comercio.cuentaLiquidacion().numero(),
 				comercio.cuentaLiquidacion().titular(),
-				comercio.registradoEn());
+				comercio.registradoEn(),
+				comercio.motivoDecision(),
+				comercio.decisionEn());
 	}
 
 	Comercio aDominio(ComercioJpaEntity entidad) {
@@ -34,7 +36,9 @@ public class ComercioJpaMapper {
 						entidad.cuentaNumero(),
 						entidad.cuentaTitular()),
 				EstadoVerificacion.valueOf(entidad.estadoVerificacion()),
-				entidad.registradoEn());
+				entidad.registradoEn(),
+				entidad.motivoDecision(),
+				entidad.decisionEn());
 	}
 
 }
