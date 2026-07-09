@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -121,6 +122,68 @@ class OrdenesApiTest {
 	}
 
 	@Test
+	void elDueno_consultaSuOrdenConTimestampsDeTransicion() throws Exception {
+		ComercioListo comercio = comercioVerificado("830037248-0", "detalle@ordenes.co");
+		String ordenId = crearOrden(comercio.token(), 35000);
+
+		mvc.perform(get("/api/ordenes/" + ordenId)
+						.header("Authorization", "Bearer " + comercio.token()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.estado").value("PENDIENTE_PAGO"))
+				.andExpect(jsonPath("$.monto").value(35000))
+				.andExpect(jsonPath("$.transiciones[0].desde").value("CREADA"))
+				.andExpect(jsonPath("$.transiciones[0].hacia").value("PENDIENTE_PAGO"))
+				.andExpect(jsonPath("$.transiciones[0].momento").isNotEmpty());
+	}
+
+	@Test
+	void otroComercio_recibe404_igualQueUnaOrdenInexistente() throws Exception {
+		ComercioListo duenoA = comercioVerificado("890399001-1", "dueno-orden@ordenes.co");
+		ComercioListo otroB = comercioVerificado("860034917-5", "otro-orden@ordenes.co");
+		String ordenDeA = crearOrden(duenoA.token(), 25000);
+
+		mvc.perform(get("/api/ordenes/" + ordenDeA)
+						.header("Authorization", "Bearer " + otroB.token()))
+				.andExpect(status().isNotFound());
+		mvc.perform(get("/api/ordenes/" + UUID.randomUUID())
+						.header("Authorization", "Bearer " + otroB.token()))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void laConsultaPublicaPorReferencia_exponeSoloEstadoYMonto() throws Exception {
+		ComercioListo comercio = comercioVerificado("900156264-2", "publica@ordenes.co");
+		String ordenId = crearOrden(comercio.token(), 15000);
+		MvcResult detalle = mvc.perform(get("/api/ordenes/" + ordenId)
+						.header("Authorization", "Bearer " + comercio.token()))
+				.andExpect(status().isOk()).andReturn();
+		String referencia = json.readTree(detalle.getResponse().getContentAsString())
+				.get("referencia").asText();
+
+		// sin token: es la página de pago del pagador
+		MvcResult publica = mvc.perform(get("/api/pagos/" + referencia))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.estado").value("PENDIENTE_PAGO"))
+				.andExpect(jsonPath("$.monto").value(15000))
+				.andReturn();
+
+		// contrato estricto: SOLO estado y monto, nada del comercio ni interno
+		assertThat(json.readTree(publica.getResponse().getContentAsString()).fieldNames())
+				.toIterable().containsExactlyInAnyOrder("estado", "monto");
+
+		mvc.perform(get("/api/pagos/referencia-inexistente"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void elContratoOpenApi_estaPublicadoParaElFrontend() throws Exception {
+		mvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.paths['/api/ordenes']").exists())
+				.andExpect(jsonPath("$.paths['/api/pagos/{referencia}']").exists());
+	}
+
+	@Test
 	void sinToken_401_yConTokenDeAdmin_403() throws Exception {
 		mvc.perform(post("/api/ordenes")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -172,6 +235,16 @@ class OrdenesApiTest {
 						.content("{\"decision\": \"APROBAR\"}"))
 				.andExpect(status().isOk());
 		return comercio;
+	}
+
+	private String crearOrden(String token, long monto) throws Exception {
+		MvcResult creada = mvc.perform(post("/api/ordenes")
+						.header("Authorization", "Bearer " + token)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("{\"monto\": %d}".formatted(monto)))
+				.andExpect(status().isCreated())
+				.andReturn();
+		return json.readTree(creada.getResponse().getContentAsString()).get("id").asText();
 	}
 
 	private String token(String usuario, String contrasena) throws Exception {

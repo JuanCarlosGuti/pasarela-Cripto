@@ -1,5 +1,7 @@
 package com.pasarela.pagos.infraestructura.entrada.rest;
 
+import com.pasarela.pagos.dominio.puerto.entrada.ConsultarOrdenUseCase;
+import com.pasarela.pagos.dominio.puerto.entrada.ConsultarOrdenUseCase.ComandoConsultarOrden;
 import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase;
 import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase.ComandoCrearOrden;
 import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase.OrdenCreada;
@@ -7,6 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +24,24 @@ import java.util.UUID;
 public class OrdenController {
 
 	private final CrearOrdenUseCase crearOrden;
+	private final ConsultarOrdenUseCase consultarOrden;
 
-	public OrdenController(CrearOrdenUseCase crearOrden) {
+	public OrdenController(CrearOrdenUseCase crearOrden, ConsultarOrdenUseCase consultarOrden) {
 		this.crearOrden = crearOrden;
+		this.consultarOrden = consultarOrden;
+	}
+
+	/**
+	 * Detalle para el dueño (HU-009): el ADMIN ve cualquiera; un COMERCIO
+	 * solo las suyas — pedir otra responde 404, igual que una inexistente.
+	 */
+	@GetMapping("/{id}")
+	public OrdenDetalleResponse consultar(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+		UUID comercioDelSolicitante = "ADMIN".equals(jwt.getClaimAsString("rol"))
+				? null
+				: UUID.fromString(jwt.getClaimAsString("comercioId"));
+		return OrdenDetalleResponse.de(consultarOrden.consultar(
+				new ComandoConsultarOrden(id, comercioDelSolicitante)));
 	}
 
 	/** Solo rol COMERCIO (ver ConfiguracionDeSeguridadHttp): el comercio sale del token. */
