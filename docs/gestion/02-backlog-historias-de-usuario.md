@@ -207,7 +207,7 @@ expiración **para** cobrarle a un cliente cripto en segundos.
   decisión documentada) y el comercio recibe un error accionable.
 - La `ReferenciaPago` es única (colisión probada) y no contiene datos del comercio.
 
-### ⬜ T-006 — Adaptador simulado del proveedor
+### 🔵 T-006 — Adaptador simulado del proveedor
 **Como** Dev **quiero** un `ProveedorDePagoSimulado` que implemente
 `ProveedorDePagoPort` **para** desarrollar todo el MVP sin depender del sandbox de
 Binance.
