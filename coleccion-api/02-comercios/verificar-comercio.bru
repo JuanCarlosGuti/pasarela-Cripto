@@ -21,11 +21,14 @@ body:json {
 }
 
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 2 (HU-005).
+  ✅ DISPONIBLE DESDE HU-005 (Sprint 2). El 403 por rol llega con HU-006:
+  hoy el endpoint está abierto porque aún no existe seguridad.
 
-  Solo rol ADMIN (con rol COMERCIO debe responder 403).
-  APROBAR → VERIFICADO y puedeCobrar() = true.
-  RECHAZAR / SUSPENDER requieren campo "motivo" (auditable).
+  Decisiones: APROBAR, RECHAZAR, SUSPENDER, REACTIVAR.
+  - APROBAR → VERIFICADO (solo desde PENDIENTE) y puedeCobrar() = true.
+  - RECHAZAR / SUSPENDER exigen "motivo" (auditable) → 400 si falta.
+  - APROBAR un SUSPENDIDO → 409: solo REACTIVAR lo devuelve a VERIFICADO.
+  - Comercio inexistente → 404.
 
-  Define la variable `comercioId` con el id devuelto por "Registrar comercio".
+  La variable `comercioId` la deja lista "Registrar comercio".
 }

@@ -6,18 +6,19 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Respuesta del registro. No expone la cuenta de liquidación: es dato
- * sensible y el cliente ya la conoce.
+ * Representación pública del comercio. No expone la cuenta de liquidación
+ * (dato sensible) ni el motivo de decisiones (se consulta por canales de
+ * administración cuando exista el rol, HU-006).
  */
-public record ComercioRegistradoResponse(
+public record ComercioResponse(
 		UUID id,
 		String razonSocial,
 		String nit,
 		String estadoVerificacion,
 		Instant registradoEn) {
 
-	static ComercioRegistradoResponse de(Comercio comercio) {
-		return new ComercioRegistradoResponse(
+	static ComercioResponse de(Comercio comercio) {
+		return new ComercioResponse(
 				comercio.id().valor(),
 				comercio.razonSocial(),
 				comercio.nit().completo(),
