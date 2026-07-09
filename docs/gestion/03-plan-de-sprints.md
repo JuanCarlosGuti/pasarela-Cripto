@@ -178,7 +178,7 @@ maestro (abogado fintech, contratos).
 |--------|--------|-----|
 | 0 — Fundaciones | ✅ cerrado | `v0.0.1` |
 | 1 — Dominio + persistencia | ✅ cerrado | `v0.1.0` |
-| 2 — Comercios + seguridad | ⬜ pendiente | — |
+| 2 — Comercios + seguridad | 🔵 en curso | — |
 | 3 — Cobro QR simulado | ⬜ pendiente | — |
 | 4 — Webhook + idempotencia | ⬜ pendiente | — |
 | 5 — Jobs + liquidación | ⬜ pendiente | — |

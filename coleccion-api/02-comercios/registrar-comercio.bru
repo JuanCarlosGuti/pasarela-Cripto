@@ -13,7 +13,7 @@ post {
 body:json {
   {
     "razonSocial": "Tienda La Esquina SAS",
-    "nit": "900123456-8",
+    "nit": "899999068-1",
     "cuentaLiquidacion": {
       "tipo": "NEQUI",
       "numero": "3001234567",
@@ -22,13 +22,20 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("comercioId", res.getBody().id);
+  }
+}
+
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 2 (HU-004).
+  ✅ DISPONIBLE DESDE HU-004 (Sprint 2).
 
-  201 → el comercio queda PENDIENTE (aún no puede cobrar).
-  Caminos tristes: NIT con dígito de verificación inválido → 400;
-  NIT duplicado → 409.
+  201 → el comercio queda PENDIENTE (aún no puede cobrar) y el script
+  guarda `comercioId` para la verificación (HU-005).
+  Caminos tristes: NIT con dígito de verificación inválido → 400 con
+  mensaje claro; NIT duplicado → 409.
 
-  El NIT del ejemplo es ficticio: reemplázalo por uno con dígito de
-  verificación válido (algoritmo DIAN) cuando el endpoint exista.
+  El NIT del ejemplo (899999068-1, Ecopetrol) tiene dígito DIAN válido.
+  Para probar el 400 usa 899999068-2; para el 409 repite la petición.
 }

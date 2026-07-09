@@ -132,7 +132,7 @@ válidas **para** que jamás exista un cobro en estado inconsistente.
 
 ## Épica E3 — Comercios, onboarding y seguridad *(Sprint 2 / Fase 3)*
 
-### ⬜ HU-004 — Registro de comercio
+### ✅ HU-004 — Registro de comercio
 **Como** dueño de un Comercio **quiero** registrarme con los datos de mi negocio y
 mi cuenta de liquidación **para** empezar el proceso de verificación.
 
@@ -146,7 +146,7 @@ mi cuenta de liquidación **para** empezar el proceso de verificación.
 - **Dado** un NIT ya registrado, **entonces** 409 (sin duplicados).
 - Ningún dato sensible aparece en logs ni en la URL.
 
-### ⬜ HU-005 — Verificación manual del comercio
+### ✅ HU-005 — Verificación manual del comercio
 **Como** Admin **quiero** aprobar, rechazar o suspender comercios **para** controlar
 quién puede cobrar por la plataforma.
 
