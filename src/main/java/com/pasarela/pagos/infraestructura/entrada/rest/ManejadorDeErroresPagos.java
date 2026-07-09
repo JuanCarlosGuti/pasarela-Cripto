@@ -1,0 +1,31 @@
+package com.pasarela.pagos.infraestructura.entrada.rest;
+
+import com.pasarela.compartido.dominio.excepcion.MontoInvalidoException;
+import com.pasarela.pagos.dominio.excepcion.OrdenInvalidaException;
+import com.pasarela.pagos.dominio.excepcion.ProveedorDePagoNoDisponibleException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/** Traduce las excepciones del contexto de pagos a HTTP. */
+@RestControllerAdvice
+public class ManejadorDeErroresPagos {
+
+	public record ErrorResponse(String mensaje) {
+	}
+
+	@ExceptionHandler({OrdenInvalidaException.class, MontoInvalidoException.class})
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ErrorResponse datosInvalidos(RuntimeException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(ProveedorDePagoNoDisponibleException.class)
+	@ResponseStatus(HttpStatus.BAD_GATEWAY)
+	public ErrorResponse proveedorNoDisponible(ProveedorDePagoNoDisponibleException excepcion) {
+		return new ErrorResponse(
+				"No fue posible registrar el cobro con el proveedor; intenta de nuevo");
+	}
+
+}

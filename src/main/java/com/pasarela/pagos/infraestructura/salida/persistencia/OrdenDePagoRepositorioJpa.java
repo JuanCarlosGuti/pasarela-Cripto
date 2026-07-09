@@ -1,5 +1,8 @@
 package com.pasarela.pagos.infraestructura.salida.persistencia;
 
+import com.pasarela.compartido.dominio.modelo.Dinero;
+import com.pasarela.compartido.dominio.modelo.IdComercio;
+import com.pasarela.compartido.dominio.modelo.Moneda;
 import com.pasarela.pagos.dominio.modelo.EstadoOrden;
 import com.pasarela.pagos.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
@@ -47,5 +50,19 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 				.map(mapper::aDominio)
 				.toList();
 	}
+
+	@Override
+	public Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta) {
+		return new Dinero(
+				jpa.sumarMontos(comercioId.valor(), desde, hasta, ESTADOS_QUE_CONSUMEN_CUPO),
+				Moneda.COP);
+	}
+
+	/** Pendientes y pagadas consumen cupo; expiradas, fallidas y en revisión no. */
+	private static final List<String> ESTADOS_QUE_CONSUMEN_CUPO = List.of(
+			EstadoOrden.PENDIENTE_PAGO.name(),
+			EstadoOrden.PAGO_DETECTADO.name(),
+			EstadoOrden.CONVERTIDA.name(),
+			EstadoOrden.LIQUIDADA.name());
 
 }

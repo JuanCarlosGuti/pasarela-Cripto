@@ -171,6 +171,50 @@ class OrdenDePagoRepositorioJpaTest {
 	}
 
 	@Nested
+	class AcumuladoDelMes {
+
+		private static final Instant DESDE = Instant.parse("2026-07-01T05:00:00Z");
+		private static final Instant HASTA = Instant.parse("2026-08-01T05:00:00Z");
+
+		@Test
+		void sumaSoloLasOrdenesDelComercioEnElMes_queConsumenCupo() {
+			IdComercio comercio = IdComercio.generar();
+			IdComercio otroComercio = IdComercio.generar();
+
+			// cuentan: pendiente y pagada, del comercio, dentro del mes
+			repositorio.guardar(ordenDe(comercio, 100_000, DESDE.plusSeconds(60)));
+			OrdenDePago pagada = ordenDe(comercio, 200_000, DESDE.plusSeconds(120));
+			pagada.confirmarPago(eventoDePagoDe(pagada), DESDE.plusSeconds(180));
+			repositorio.guardar(pagada);
+
+			// NO cuentan: expirada, de otro comercio, fuera del mes
+			OrdenDePago expirada = ordenDe(comercio, 400_000, DESDE.plusSeconds(60));
+			expirada.expirar(DESDE.plusSeconds(60).plus(Duration.ofMinutes(16)));
+			repositorio.guardar(expirada);
+			repositorio.guardar(ordenDe(otroComercio, 800_000, DESDE.plusSeconds(60)));
+			repositorio.guardar(ordenDe(comercio, 1_600_000, DESDE.minusSeconds(1)));
+			repositorio.guardar(ordenDe(comercio, 3_200_000, HASTA));
+
+			assertThat(repositorio.acumuladoDelMes(comercio, DESDE, HASTA))
+					.isEqualTo(Dinero.cop(300_000));
+		}
+
+		@Test
+		void sinOrdenes_elAcumuladoEsCero() {
+			assertThat(repositorio.acumuladoDelMes(IdComercio.generar(), DESDE, HASTA))
+					.isEqualTo(Dinero.cop(0));
+		}
+
+		private OrdenDePago ordenDe(IdComercio comercio, long monto, Instant creadaEn) {
+			OrdenDePago orden = OrdenDePago.crear(
+					comercio, Dinero.cop(monto), ReferenciaPago.generar(),
+					creadaEn, creadaEn.plus(Duration.ofMinutes(15)));
+			orden.registrarCobroEnProveedor(creadaEn);
+			return orden;
+		}
+	}
+
+	@Nested
 	class UnicidadDeLaReferencia {
 
 		@Test
