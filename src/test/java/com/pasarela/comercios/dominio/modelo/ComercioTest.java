@@ -1,7 +1,9 @@
 package com.pasarela.comercios.dominio.modelo;
 
 import com.pasarela.comercios.dominio.excepcion.ComercioInvalidoException;
+import com.pasarela.comercios.dominio.excepcion.LimiteExcedidoException;
 import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
+import com.pasarela.compartido.dominio.modelo.Dinero;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,6 +44,8 @@ class ComercioTest {
 			assertThat(comercio.registradoEn()).isEqualTo(AHORA);
 			assertThat(comercio.motivoDecision()).isNull();
 			assertThat(comercio.decisionEn()).isNull();
+			// cumplimiento desde el día uno: nace con los topes del MVP
+			assertThat(comercio.limites()).isEqualTo(LimitesOperacion.porDefecto());
 		}
 
 		@Test
@@ -197,6 +201,40 @@ class ComercioTest {
 	}
 
 	@Nested
+	class Limites {
+
+		@Test
+		void actualizarLimites_reemplazaLosTopes() {
+			Comercio comercio = comercioEnEstado(EstadoVerificacion.VERIFICADO);
+			LimitesOperacion nuevos = new LimitesOperacion(
+					Dinero.cop(5_000_000), Dinero.cop(50_000_000));
+
+			comercio.actualizarLimites(nuevos);
+
+			assertThat(comercio.limites()).isEqualTo(nuevos);
+		}
+
+		@Test
+		void actualizarLimites_conNulo_lanzaExcepcionYNoCambiaNada() {
+			Comercio comercio = comercioEnEstado(EstadoVerificacion.VERIFICADO);
+
+			assertThatThrownBy(() -> comercio.actualizarLimites(null))
+					.isInstanceOf(ComercioInvalidoException.class);
+
+			assertThat(comercio.limites()).isEqualTo(LimitesOperacion.porDefecto());
+		}
+
+		@Test
+		void validarCobro_delegaEnLosLimitesDelComercio() {
+			Comercio comercio = comercioEnEstado(EstadoVerificacion.VERIFICADO);
+
+			assertThatThrownBy(() -> comercio.validarCobro(
+					Dinero.cop(2_000_001), Dinero.cop(0)))
+					.isInstanceOf(LimiteExcedidoException.class);
+		}
+	}
+
+	@Nested
 	class ReglaDeCobro {
 
 		@Test
@@ -240,24 +278,32 @@ class ComercioTest {
 		@Test
 		void reconstituir_conCualquierDatoObligatorioNulo_lanzaExcepcion() {
 			Comercio c = comercioEnEstado(EstadoVerificacion.PENDIENTE);
+			LimitesOperacion limites = c.limites();
 
 			assertThatThrownBy(() -> Comercio.reconstituir(null, c.razonSocial(), c.nit(),
-					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(), null, null))
+					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(),
+					null, null, limites))
 					.isInstanceOf(ComercioInvalidoException.class);
 			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), " ", c.nit(),
-					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(), null, null))
+					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(),
+					null, null, limites))
 					.isInstanceOf(ComercioInvalidoException.class);
 			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), c.razonSocial(), null,
-					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(), null, null))
+					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(),
+					null, null, limites))
 					.isInstanceOf(ComercioInvalidoException.class);
 			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), c.razonSocial(), c.nit(),
-					null, c.estadoVerificacion(), c.registradoEn(), null, null))
+					null, c.estadoVerificacion(), c.registradoEn(), null, null, limites))
 					.isInstanceOf(ComercioInvalidoException.class);
 			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), c.razonSocial(), c.nit(),
-					c.cuentaLiquidacion(), null, c.registradoEn(), null, null))
+					c.cuentaLiquidacion(), null, c.registradoEn(), null, null, limites))
 					.isInstanceOf(ComercioInvalidoException.class);
 			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), c.razonSocial(), c.nit(),
-					c.cuentaLiquidacion(), c.estadoVerificacion(), null, null, null))
+					c.cuentaLiquidacion(), c.estadoVerificacion(), null, null, null, limites))
+					.isInstanceOf(ComercioInvalidoException.class);
+			assertThatThrownBy(() -> Comercio.reconstituir(c.id(), c.razonSocial(), c.nit(),
+					c.cuentaLiquidacion(), c.estadoVerificacion(), c.registradoEn(),
+					null, null, null))
 					.isInstanceOf(ComercioInvalidoException.class);
 		}
 	}
@@ -330,7 +376,8 @@ class ComercioTest {
 		return Comercio.reconstituir(
 				original.id(), original.razonSocial(), original.nit(),
 				original.cuentaLiquidacion(), original.estadoVerificacion(),
-				original.registradoEn(), original.motivoDecision(), original.decisionEn());
+				original.registradoEn(), original.motivoDecision(), original.decisionEn(),
+				original.limites());
 	}
 
 }

@@ -1,6 +1,8 @@
 package com.pasarela.comercios.infraestructura.entrada.rest;
 
 import com.pasarela.comercios.dominio.modelo.Comercio;
+import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase;
+import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase.ComandoActualizarLimites;
 import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase.ComandoConsultarComercio;
 import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase;
@@ -14,6 +16,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,13 +31,16 @@ public class ComercioController {
 	private final RegistrarComercioUseCase registrarComercio;
 	private final DecidirVerificacionUseCase decidirVerificacion;
 	private final ConsultarComercioUseCase consultarComercio;
+	private final ActualizarLimitesUseCase actualizarLimites;
 
 	public ComercioController(RegistrarComercioUseCase registrarComercio,
 			DecidirVerificacionUseCase decidirVerificacion,
-			ConsultarComercioUseCase consultarComercio) {
+			ConsultarComercioUseCase consultarComercio,
+			ActualizarLimitesUseCase actualizarLimites) {
 		this.registrarComercio = registrarComercio;
 		this.decidirVerificacion = decidirVerificacion;
 		this.consultarComercio = consultarComercio;
+		this.actualizarLimites = actualizarLimites;
 	}
 
 	@PostMapping
@@ -67,6 +73,17 @@ public class ComercioController {
 				: UUID.fromString(comercioIdDelToken);
 		return ComercioResponse.de(consultarComercio.consultar(
 				new ComandoConsultarComercio(id, comercioDelSolicitante)));
+	}
+
+	/** Ajuste de topes por el Admin (HU-007); auditado en la bitácora. */
+	@PutMapping("/{id}/limites")
+	public ComercioResponse actualizarLimites(
+			@PathVariable UUID id,
+			@Valid @RequestBody ActualizacionLimitesRequest solicitud,
+			@AuthenticationPrincipal Jwt jwt) {
+		return ComercioResponse.de(actualizarLimites.actualizar(new ComandoActualizarLimites(
+				id, solicitud.topePorTransaccion(), solicitud.topeMensual(),
+				jwt.getSubject())));
 	}
 
 	/** Decisión del Admin sobre la verificación (solo rol ADMIN, ver ConfiguracionDeSeguridadHttp). */

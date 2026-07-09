@@ -26,6 +26,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -180,6 +181,31 @@ class SeguridadApiTest {
 			mvc.perform(get("/api/comercios/" + comercioB.id())
 							.header("Authorization", "Bearer " + tokenDeAdmin()))
 					.andExpect(status().isOk());
+		}
+
+		@Test
+		void limites_soloElAdminPuedeCambiarlos_yQuedanEnLaRespuesta() throws Exception {
+			ComercioAutenticado comercio = registrarYLoguearComercio(
+					"860002964-4", "limites@test.co");
+			String cuerpoLimites = """
+					{"topePorTransaccion": 5000000, "topeMensual": 50000000}
+					""";
+
+			// un COMERCIO no puede tocar límites (ni siquiera los suyos)
+			mvc.perform(put("/api/comercios/%s/limites".formatted(comercio.id()))
+							.header("Authorization", "Bearer " + comercio.token())
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(cuerpoLimites))
+					.andExpect(status().isForbidden());
+
+			// el ADMIN sí; la respuesta refleja los topes nuevos
+			mvc.perform(put("/api/comercios/%s/limites".formatted(comercio.id()))
+							.header("Authorization", "Bearer " + tokenDeAdmin())
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(cuerpoLimites))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.limites.topePorTransaccion").value(5000000))
+					.andExpect(jsonPath("$.limites.topeMensual").value(50000000));
 		}
 
 		@Test

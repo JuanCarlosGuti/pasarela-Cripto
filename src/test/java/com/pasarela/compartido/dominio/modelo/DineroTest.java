@@ -107,6 +107,26 @@ class DineroTest {
 	}
 
 	@Nested
+	class Comparacion {
+
+		@Test
+		void esMayorQue_conLaMismaMoneda_comparaMontos() {
+			assertThat(Dinero.cop(2000001).esMayorQue(Dinero.cop(2000000))).isTrue();
+			assertThat(Dinero.cop(2000000).esMayorQue(Dinero.cop(2000000))).isFalse();
+			assertThat(Dinero.cop(1999999).esMayorQue(Dinero.cop(2000000))).isFalse();
+		}
+
+		@Test
+		void esMayorQue_conMonedasDistintas_lanzaExcepcion() {
+			Dinero cop = Dinero.cop(100);
+			Dinero usdt = Dinero.de(BigDecimal.TEN, Moneda.USDT);
+
+			assertThatThrownBy(() -> cop.esMayorQue(usdt))
+					.isInstanceOf(MonedasDistintasException.class);
+		}
+	}
+
+	@Nested
 	class CalculoDePorcentaje {
 
 		@Test

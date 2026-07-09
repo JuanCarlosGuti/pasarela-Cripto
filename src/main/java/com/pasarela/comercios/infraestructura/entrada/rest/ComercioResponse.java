@@ -15,7 +15,12 @@ public record ComercioResponse(
 		String razonSocial,
 		String nit,
 		String estadoVerificacion,
-		Instant registradoEn) {
+		Instant registradoEn,
+		LimitesResponse limites) {
+
+	/** Topes de operación en pesos (COP). */
+	public record LimitesResponse(long topePorTransaccion, long topeMensual) {
+	}
 
 	static ComercioResponse de(Comercio comercio) {
 		return new ComercioResponse(
@@ -23,7 +28,10 @@ public record ComercioResponse(
 				comercio.razonSocial(),
 				comercio.nit().completo(),
 				comercio.estadoVerificacion().name(),
-				comercio.registradoEn());
+				comercio.registradoEn(),
+				new LimitesResponse(
+						comercio.limites().topePorTransaccion().monto().longValue(),
+						comercio.limites().topeMensual().monto().longValue()));
 	}
 
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -43,13 +44,20 @@ public class ComercioJpaEntity {
 	@Column(name = "decision_en")
 	private Instant decisionEn;
 
+	@Column(name = "limite_por_transaccion", nullable = false, precision = 19, scale = 4)
+	private BigDecimal limitePorTransaccion;
+
+	@Column(name = "limite_mensual", nullable = false, precision = 19, scale = 4)
+	private BigDecimal limiteMensual;
+
 	protected ComercioJpaEntity() {
 		// requerido por JPA
 	}
 
 	ComercioJpaEntity(UUID id, String razonSocial, String nit, String estadoVerificacion,
 			String cuentaTipo, String cuentaNumero, String cuentaTitular, Instant registradoEn,
-			String motivoDecision, Instant decisionEn) {
+			String motivoDecision, Instant decisionEn,
+			BigDecimal limitePorTransaccion, BigDecimal limiteMensual) {
 		this.id = id;
 		this.razonSocial = razonSocial;
 		this.nit = nit;
@@ -60,6 +68,8 @@ public class ComercioJpaEntity {
 		this.registradoEn = registradoEn;
 		this.motivoDecision = motivoDecision;
 		this.decisionEn = decisionEn;
+		this.limitePorTransaccion = limitePorTransaccion;
+		this.limiteMensual = limiteMensual;
 	}
 
 	UUID id() {
@@ -100,6 +110,14 @@ public class ComercioJpaEntity {
 
 	Instant decisionEn() {
 		return decisionEn;
+	}
+
+	BigDecimal limitePorTransaccion() {
+		return limitePorTransaccion;
+	}
+
+	BigDecimal limiteMensual() {
+		return limiteMensual;
 	}
 
 }
