@@ -160,7 +160,7 @@ quién puede cobrar por la plataforma.
 - Las transiciones de verificación inválidas (p. ej. verificar un `SUSPENDIDO` sin
   reactivación explícita) se rechazan en el dominio.
 
-### 🔵 HU-006 — Autenticación y roles
+### ✅ HU-006 — Autenticación y roles
 **Como** Plataforma **quiero** autenticación JWT con roles `ADMIN` y `COMERCIO`
 **para** que cada quien acceda solo a lo suyo.
 
