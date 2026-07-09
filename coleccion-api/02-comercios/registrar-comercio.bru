@@ -18,6 +18,10 @@ body:json {
       "tipo": "NEQUI",
       "numero": "3001234567",
       "titular": "Tienda La Esquina SAS"
+    },
+    "credenciales": {
+      "email": "dueno@tienda.co",
+      "contrasena": "clave-segura-123"
     }
   }
 }
@@ -38,4 +42,8 @@ docs {
 
   El NIT del ejemplo (899999068-1, Ecopetrol) tiene dígito DIAN válido.
   Para probar el 400 usa 899999068-2; para el 409 repite la petición.
+
+  Desde HU-006 el registro también crea la cuenta de acceso del dueño
+  (credenciales.email/contrasena, mínimo 8 caracteres): con ellas se hace
+  login como COMERCIO. Email ya usado → 409.
 }

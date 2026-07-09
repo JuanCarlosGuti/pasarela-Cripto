@@ -61,6 +61,11 @@ public record Dinero(BigDecimal monto, Moneda moneda) {
 		return monto.signum() == 0;
 	}
 
+	public boolean esMayorQue(Dinero otro) {
+		validarMismaMoneda(otro);
+		return monto.compareTo(otro.monto) > 0;
+	}
+
 	private void validarMismaMoneda(Dinero otro) {
 		if (moneda != otro.moneda) {
 			throw new MonedasDistintasException(

@@ -2,6 +2,7 @@ package com.pasarela.comercios.dominio.modelo;
 
 import com.pasarela.comercios.dominio.excepcion.ComercioInvalidoException;
 import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
+import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
 
 import java.time.Instant;
@@ -29,6 +30,7 @@ public class Comercio {
 	private EstadoVerificacion estadoVerificacion;
 	private String motivoDecision;
 	private Instant decisionEn;
+	private LimitesOperacion limites;
 
 	private Comercio(IdComercio id, String razonSocial, Nit nit,
 			CuentaLiquidacion cuentaLiquidacion, Instant registradoEn,
@@ -47,24 +49,29 @@ public class Comercio {
 		validarObligatorio(nit, "el NIT");
 		validarObligatorio(cuentaLiquidacion, "la cuenta de liquidación");
 		validarObligatorio(ahora, "la fecha de registro");
-		return new Comercio(IdComercio.generar(), razonSocial.trim(), nit,
+		Comercio comercio = new Comercio(IdComercio.generar(), razonSocial.trim(), nit,
 				cuentaLiquidacion, ahora, EstadoVerificacion.PENDIENTE);
+		comercio.limites = LimitesOperacion.porDefecto();
+		return comercio;
 	}
 
 	/** Rehidratación desde persistencia: estado y última decisión tal cual. */
 	public static Comercio reconstituir(IdComercio id, String razonSocial, Nit nit,
 			CuentaLiquidacion cuentaLiquidacion, EstadoVerificacion estadoVerificacion,
-			Instant registradoEn, String motivoDecision, Instant decisionEn) {
+			Instant registradoEn, String motivoDecision, Instant decisionEn,
+			LimitesOperacion limites) {
 		validarObligatorio(id, "el id");
 		validarRazonSocial(razonSocial);
 		validarObligatorio(nit, "el NIT");
 		validarObligatorio(cuentaLiquidacion, "la cuenta de liquidación");
 		validarObligatorio(estadoVerificacion, "el estado de verificación");
 		validarObligatorio(registradoEn, "la fecha de registro");
+		validarObligatorio(limites, "los límites de operación");
 		Comercio comercio = new Comercio(id, razonSocial, nit, cuentaLiquidacion,
 				registradoEn, estadoVerificacion);
 		comercio.motivoDecision = motivoDecision;
 		comercio.decisionEn = decisionEn;
+		comercio.limites = limites;
 		return comercio;
 	}
 
@@ -95,6 +102,17 @@ public class Comercio {
 	/** Regla del MVP: solo un comercio verificado puede crear cobros. */
 	public boolean puedeCobrar() {
 		return estadoVerificacion == EstadoVerificacion.VERIFICADO;
+	}
+
+	/** El Admin ajusta los topes; la auditoría (quién/cuándo) la registra la aplicación. */
+	public void actualizarLimites(LimitesOperacion nuevosLimites) {
+		validarObligatorio(nuevosLimites, "los límites de operación");
+		this.limites = nuevosLimites;
+	}
+
+	/** Regla de cumplimiento (HU-007): el cobro debe respetar ambos topes. */
+	public void validarCobro(Dinero monto, Dinero acumuladoDelMes) {
+		limites.validarCobro(monto, acumuladoDelMes);
 	}
 
 	private void exigirEstado(EstadoVerificacion esperado, String accion) {
@@ -165,6 +183,10 @@ public class Comercio {
 	/** Momento de la última decisión de verificación; null si no ha habido. */
 	public Instant decisionEn() {
 		return decisionEn;
+	}
+
+	public LimitesOperacion limites() {
+		return limites;
 	}
 
 	@Override

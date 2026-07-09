@@ -1,0 +1,34 @@
+meta {
+  name: Actualizar límites (admin)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/comercios/{{comercioId}}/limites
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "topePorTransaccion": 5000000,
+    "topeMensual": 50000000
+  }
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-007 (Sprint 2). Solo rol ADMIN (COMERCIO → 403).
+
+  Cambia los topes de operación del comercio (montos en COP). Todo comercio
+  nace con los topes del MVP: $2.000.000 por transacción y $20.000.000 al
+  mes. El cambio queda auditado en la bitácora de operaciones: quién,
+  cuándo y valores anterior → nuevo.
+
+  Caminos tristes: tope por transacción mayor al mensual → 400;
+  topes ≤ 0 → 400; comercio inexistente → 404.
+}

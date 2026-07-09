@@ -4,6 +4,8 @@ import com.pasarela.comercios.dominio.excepcion.ComercioNoEncontradoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioYaRegistradoException;
 import com.pasarela.comercios.dominio.excepcion.NitInvalidoException;
 import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
+import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase;
+import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase;
 import com.pasarela.comercios.dominio.modelo.Comercio;
 import com.pasarela.comercios.dominio.modelo.CuentaLiquidacion;
@@ -12,6 +14,7 @@ import com.pasarela.comercios.dominio.modelo.TipoCuenta;
 import com.pasarela.comercios.dominio.puerto.entrada.RegistrarComercioUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,7 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Contrato HTTP del controller, sin la cadena de seguridad (addFilters=false):
+ * la matriz de permisos completa se prueba end-to-end en SeguridadApiTest.
+ */
 @WebMvcTest(ComercioController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ComercioControllerTest {
 
 	private static final String CUERPO_VALIDO = """
@@ -37,6 +45,10 @@ class ComercioControllerTest {
 			    "tipo": "NEQUI",
 			    "numero": "3001234567",
 			    "titular": "Tienda La Esquina SAS"
+			  },
+			  "credenciales": {
+			    "email": "dueno@tienda.co",
+			    "contrasena": "secreta123"
 			  }
 			}
 			""";
@@ -49,6 +61,12 @@ class ComercioControllerTest {
 
 	@MockitoBean
 	private DecidirVerificacionUseCase decidirVerificacion;
+
+	@MockitoBean
+	private ConsultarComercioUseCase consultarComercio;
+
+	@MockitoBean
+	private ActualizarLimitesUseCase actualizarLimites;
 
 	@Test
 	void post_conDatosValidos_responde201ConUbicacionYEstadoPendiente() throws Exception {
@@ -103,6 +121,10 @@ class ComercioControllerTest {
 				    "tipo": "NEQUI",
 				    "numero": "3001234567",
 				    "titular": "Tienda"
+				  },
+				  "credenciales": {
+				    "email": "dueno@tienda.co",
+				    "contrasena": "secreta123"
 				  }
 				}
 				""";
