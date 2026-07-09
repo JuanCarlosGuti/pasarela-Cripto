@@ -146,7 +146,7 @@ mi cuenta de liquidación **para** empezar el proceso de verificación.
 - **Dado** un NIT ya registrado, **entonces** 409 (sin duplicados).
 - Ningún dato sensible aparece en logs ni en la URL.
 
-### ⬜ HU-005 — Verificación manual del comercio
+### 🔵 HU-005 — Verificación manual del comercio
 **Como** Admin **quiero** aprobar, rechazar o suspender comercios **para** controlar
 quién puede cobrar por la plataforma.
 
