@@ -175,7 +175,7 @@ quién puede cobrar por la plataforma.
 - El secreto JWT viene de variable de entorno; contraseñas con BCrypt; sin datos
   sensibles en el token.
 
-### ⬜ HU-007 — Límites de operación del comercio
+### 🔵 HU-007 — Límites de operación del comercio
 **Como** Admin **quiero** topes por transacción y por mes para cada comercio
 **para** cumplir los controles del MVP desde el día uno.
 

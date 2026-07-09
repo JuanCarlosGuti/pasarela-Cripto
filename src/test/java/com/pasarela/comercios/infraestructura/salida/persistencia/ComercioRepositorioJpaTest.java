@@ -4,8 +4,10 @@ import com.pasarela.TestcontainersConfiguration;
 import com.pasarela.comercios.dominio.modelo.Comercio;
 import com.pasarela.comercios.dominio.modelo.CuentaLiquidacion;
 import com.pasarela.comercios.dominio.modelo.EstadoVerificacion;
+import com.pasarela.comercios.dominio.modelo.LimitesOperacion;
 import com.pasarela.comercios.dominio.modelo.Nit;
 import com.pasarela.comercios.dominio.modelo.TipoCuenta;
+import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.comercios.dominio.puerto.salida.ComercioRepositorio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,19 @@ class ComercioRepositorioJpaTest {
 		assertThat(recuperado.motivoDecision()).isEqualTo("actividad inusual");
 		assertThat(recuperado.decisionEn()).isEqualTo(AHORA.plusSeconds(120));
 		assertThat(recuperado.puedeCobrar()).isFalse();
+	}
+
+	@Test
+	void losLimitesActualizados_sobrevivenElViaje() {
+		Comercio comercio = comercio("900123456-8");
+		comercio.actualizarLimites(new LimitesOperacion(
+				Dinero.cop(5_000_000), Dinero.cop(50_000_000)));
+
+		repositorio.guardar(comercio);
+		Comercio recuperado = repositorio.buscarPorId(comercio.id()).orElseThrow();
+
+		assertThat(recuperado.limites().topePorTransaccion()).isEqualTo(Dinero.cop(5_000_000));
+		assertThat(recuperado.limites().topeMensual()).isEqualTo(Dinero.cop(50_000_000));
 	}
 
 	@Test

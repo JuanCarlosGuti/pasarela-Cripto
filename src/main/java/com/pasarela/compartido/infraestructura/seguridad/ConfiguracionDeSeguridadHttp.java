@@ -49,6 +49,7 @@ public class ConfiguracionDeSeguridadHttp {
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/comercios").permitAll()
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.PUT, "/api/comercios/*/limites").hasRole("ADMIN")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 						jwt.jwtAuthenticationConverter(convertidorDeRoles())));

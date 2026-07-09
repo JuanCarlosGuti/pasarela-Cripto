@@ -3,9 +3,12 @@ package com.pasarela.comercios.infraestructura.salida.persistencia;
 import com.pasarela.comercios.dominio.modelo.Comercio;
 import com.pasarela.comercios.dominio.modelo.CuentaLiquidacion;
 import com.pasarela.comercios.dominio.modelo.EstadoVerificacion;
+import com.pasarela.comercios.dominio.modelo.LimitesOperacion;
 import com.pasarela.comercios.dominio.modelo.Nit;
 import com.pasarela.comercios.dominio.modelo.TipoCuenta;
+import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
+import com.pasarela.compartido.dominio.modelo.Moneda;
 import org.springframework.stereotype.Component;
 
 /** Traducción bidireccional dominio ↔ JPA. */
@@ -23,7 +26,9 @@ public class ComercioJpaMapper {
 				comercio.cuentaLiquidacion().titular(),
 				comercio.registradoEn(),
 				comercio.motivoDecision(),
-				comercio.decisionEn());
+				comercio.decisionEn(),
+				comercio.limites().topePorTransaccion().monto(),
+				comercio.limites().topeMensual().monto());
 	}
 
 	Comercio aDominio(ComercioJpaEntity entidad) {
@@ -38,7 +43,10 @@ public class ComercioJpaMapper {
 				EstadoVerificacion.valueOf(entidad.estadoVerificacion()),
 				entidad.registradoEn(),
 				entidad.motivoDecision(),
-				entidad.decisionEn());
+				entidad.decisionEn(),
+				new LimitesOperacion(
+						new Dinero(entidad.limitePorTransaccion(), Moneda.COP),
+						new Dinero(entidad.limiteMensual(), Moneda.COP)));
 	}
 
 }

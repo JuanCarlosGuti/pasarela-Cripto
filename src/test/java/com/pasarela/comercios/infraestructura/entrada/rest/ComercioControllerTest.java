@@ -4,6 +4,7 @@ import com.pasarela.comercios.dominio.excepcion.ComercioNoEncontradoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioYaRegistradoException;
 import com.pasarela.comercios.dominio.excepcion.NitInvalidoException;
 import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
+import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase;
 import com.pasarela.comercios.dominio.modelo.Comercio;
@@ -63,6 +64,9 @@ class ComercioControllerTest {
 
 	@MockitoBean
 	private ConsultarComercioUseCase consultarComercio;
+
+	@MockitoBean
+	private ActualizarLimitesUseCase actualizarLimites;
 
 	@Test
 	void post_conDatosValidos_responde201ConUbicacionYEstadoPendiente() throws Exception {
