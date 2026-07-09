@@ -132,7 +132,7 @@ válidas **para** que jamás exista un cobro en estado inconsistente.
 
 ## Épica E3 — Comercios, onboarding y seguridad *(Sprint 2 / Fase 3)*
 
-### 🔵 HU-004 — Registro de comercio
+### ✅ HU-004 — Registro de comercio
 **Como** dueño de un Comercio **quiero** registrarme con los datos de mi negocio y
 mi cuenta de liquidación **para** empezar el proceso de verificación.
 
