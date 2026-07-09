@@ -13,7 +13,7 @@ post {
 body:json {
   {
     "usuario": "admin@pasarela.local",
-    "contrasena": "cambiar-por-la-real"
+    "contrasena": "admin-local-12345678"
   }
 }
 
@@ -24,12 +24,15 @@ script:post-response {
 }
 
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 2 (HU-006).
+  ✅ DISPONIBLE DESDE HU-006 (Sprint 2).
 
-  Devuelve un JWT con expiración. El script post-response guarda el token en
-  la variable de entorno `token`, que el resto de peticiones usa como Bearer.
+  Devuelve {token, expiraEn, rol}. El script post-response guarda el token
+  en `token`, que el resto de peticiones usa como Bearer.
 
-  Contrato tentativo según el backlog; puede ajustarse al implementarse.
-  Caminos tristes a probar: credenciales inválidas → 401 sin revelar si el
-  usuario existe; token expirado/manipulado → 401.
+  Las credenciales del ejemplo son los defaults del perfil local (se
+  sobreescriben con PASARELA_ADMIN_EMAIL / PASARELA_ADMIN_CONTRASENA).
+  Para loguearte como comercio usa el email/contraseña del registro.
+
+  Caminos tristes: credenciales inválidas → 401 con el MISMO cuerpo exista
+  o no el usuario; token expirado/manipulado → 401 en cualquier endpoint.
 }

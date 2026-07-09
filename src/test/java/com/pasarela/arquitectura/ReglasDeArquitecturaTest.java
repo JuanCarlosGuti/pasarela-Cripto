@@ -47,16 +47,19 @@ class ReglasDeArquitecturaTest {
 			.allowEmptyShould(true);
 
 	@ArchTest
-	static final ArchRule pagosNoDependeDeOtrosContextos = contextoAislado("pagos", "comercios", "liquidaciones");
+	static final ArchRule pagosNoDependeDeOtrosContextos = contextoAislado("pagos", "comercios", "liquidaciones", "seguridad");
 
 	@ArchTest
-	static final ArchRule comerciosNoDependeDeOtrosContextos = contextoAislado("comercios", "pagos", "liquidaciones");
+	static final ArchRule comerciosNoDependeDeOtrosContextos = contextoAislado("comercios", "pagos", "liquidaciones", "seguridad");
 
 	@ArchTest
-	static final ArchRule liquidacionesNoDependeDeOtrosContextos = contextoAislado("liquidaciones", "pagos", "comercios");
+	static final ArchRule liquidacionesNoDependeDeOtrosContextos = contextoAislado("liquidaciones", "pagos", "comercios", "seguridad");
 
 	@ArchTest
-	static final ArchRule compartidoNoDependeDeNingunContexto = contextoAislado("compartido", "pagos", "comercios", "liquidaciones");
+	static final ArchRule seguridadNoDependeDeOtrosContextos = contextoAislado("seguridad", "pagos", "comercios", "liquidaciones");
+
+	@ArchTest
+	static final ArchRule compartidoNoDependeDeNingunContexto = contextoAislado("compartido", "pagos", "comercios", "liquidaciones", "seguridad");
 
 	private static ArchRule contextoAislado(String contexto, String... contextosVetados) {
 		String[] paquetesVetados = new String[contextosVetados.length];
