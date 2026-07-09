@@ -215,6 +215,9 @@ Binance.
 **Criterios de aceptación:**
 - Implementa el puerto completo: crear cobro (QR fake determinista), validar firma
   (secreto compartido de prueba), interpretar webhook.
+  > *Nota de alcance (T-006):* el puerto solo define `crearCobro` en el Sprint 3;
+  > la validación de firma y la interpretación de webhooks entran al puerto con
+  > HU-010 (Sprint 4) y el simulador las implementará en ese momento.
 - Puede **simular fallos** configurables (timeout, error 500, firma inválida) para
   los tests de resiliencia.
 - Se activa por perfil/propiedad (`pasarela.proveedores.simulado.habilitado=true`);
