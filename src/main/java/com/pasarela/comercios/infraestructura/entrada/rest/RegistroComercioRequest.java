@@ -15,7 +15,17 @@ public record RegistroComercioRequest(
 		String nit,
 		@NotNull(message = "La cuenta de liquidación es obligatoria")
 		@Valid
-		CuentaLiquidacionRequest cuentaLiquidacion) {
+		CuentaLiquidacionRequest cuentaLiquidacion,
+		@NotNull(message = "Las credenciales de acceso son obligatorias")
+		@Valid
+		CredencialesRequest credenciales) {
+
+	public record CredencialesRequest(
+			@NotBlank(message = "El email de acceso es obligatorio")
+			String email,
+			@NotBlank(message = "La contraseña es obligatoria")
+			String contrasena) {
+	}
 
 	public record CuentaLiquidacionRequest(
 			@NotBlank(message = "El tipo de cuenta es obligatorio")

@@ -1,0 +1,26 @@
+meta {
+  name: Consultar comercio
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/comercios/{{comercioId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-006 (Sprint 2).
+
+  Aislamiento por dueño: un COMERCIO solo puede ver el suyo — pedir el de
+  otro responde 404 (igual que un id inexistente: no se filtra existencia).
+  El ADMIN puede consultar cualquiera.
+
+  Prueba el aislamiento: registra dos comercios, loguéate con el segundo y
+  pide el `comercioId` del primero → 404.
+}

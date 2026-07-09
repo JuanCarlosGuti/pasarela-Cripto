@@ -9,6 +9,7 @@ import com.pasarela.comercios.dominio.modelo.Nit;
 import com.pasarela.comercios.dominio.modelo.TipoCuenta;
 import com.pasarela.comercios.dominio.puerto.entrada.RegistrarComercioUseCase.ComandoRegistrarComercio;
 import com.pasarela.comercios.dominio.puerto.salida.ComercioRepositorio;
+import com.pasarela.compartido.dominio.puerto.CuentasDeAccesoPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,17 +37,20 @@ class RegistrarComercioServiceTest {
 	private static final Instant AHORA = Instant.parse("2026-07-08T10:00:00Z");
 	private static final ComandoRegistrarComercio COMANDO = new ComandoRegistrarComercio(
 			"Tienda La Esquina SAS", "899999068-1", "NEQUI", "3001234567",
-			"Tienda La Esquina SAS");
+			"Tienda La Esquina SAS", "dueno@tienda.co", "secreta123");
 
 	@Mock
 	private ComercioRepositorio repositorio;
+
+	@Mock
+	private CuentasDeAccesoPort cuentasDeAcceso;
 
 	private RegistrarComercioService servicio;
 
 	@BeforeEach
 	void configurar() {
 		servicio = new RegistrarComercioService(
-				repositorio, Clock.fixed(AHORA, ZoneOffset.UTC));
+				repositorio, cuentasDeAcceso, Clock.fixed(AHORA, ZoneOffset.UTC));
 	}
 
 	@Test
@@ -67,6 +71,17 @@ class RegistrarComercioServiceTest {
 	}
 
 	@Test
+	void registrar_creaLaCuentaDeAccesoDelDueno_conElIdDelComercioGuardado() {
+		when(repositorio.buscarPorNit(any())).thenReturn(Optional.empty());
+		when(repositorio.guardar(any())).thenAnswer(returnsFirstArg());
+
+		Comercio registrado = servicio.registrar(COMANDO);
+
+		verify(cuentasDeAcceso).crearCuentaDeComercio(
+				"dueno@tienda.co", "secreta123", registrado.id());
+	}
+
+	@Test
 	void registrar_conNitYaRegistrado_lanzaExcepcionYNoGuardaNada() {
 		Comercio existente = mock(Comercio.class);
 		when(repositorio.buscarPorNit(Nit.de("899999068-1")))
@@ -81,7 +96,8 @@ class RegistrarComercioServiceTest {
 	@Test
 	void registrar_conNitInvalido_propagaLaExcepcionDeDominio_sinTocarElRepositorio() {
 		ComandoRegistrarComercio comandoInvalido = new ComandoRegistrarComercio(
-				"Tienda", "899999068-2", "NEQUI", "3001234567", "Tienda");
+				"Tienda", "899999068-2", "NEQUI", "3001234567", "Tienda",
+				"dueno@tienda.co", "secreta123");
 
 		assertThatThrownBy(() -> servicio.registrar(comandoInvalido))
 				.isInstanceOf(NitInvalidoException.class);
@@ -92,7 +108,8 @@ class RegistrarComercioServiceTest {
 	@Test
 	void registrar_conTipoDeCuentaDesconocido_lanzaExcepcionClara() {
 		ComandoRegistrarComercio comandoInvalido = new ComandoRegistrarComercio(
-				"Tienda", "899999068-1", "BILLETERA_MAGICA", "3001234567", "Tienda");
+				"Tienda", "899999068-1", "BILLETERA_MAGICA", "3001234567", "Tienda",
+				"dueno@tienda.co", "secreta123");
 
 		assertThatThrownBy(() -> servicio.registrar(comandoInvalido))
 				.isInstanceOf(ComercioInvalidoException.class)

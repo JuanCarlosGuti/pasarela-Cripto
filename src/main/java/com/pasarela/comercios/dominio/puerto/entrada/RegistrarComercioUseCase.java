@@ -16,7 +16,9 @@ public interface RegistrarComercioUseCase {
 			String nit,
 			String tipoCuenta,
 			String numeroCuenta,
-			String titularCuenta) {
+			String titularCuenta,
+			String emailAcceso,
+			String contrasenaAcceso) {
 	}
 
 }
