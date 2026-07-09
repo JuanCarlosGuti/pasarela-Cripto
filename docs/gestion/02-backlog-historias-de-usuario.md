@@ -191,7 +191,7 @@ quién puede cobrar por la plataforma.
 
 ## Épica E4 — Crear cobro con QR *(Sprint 3 / Fase 4)*
 
-### ⬜ HU-008 — Crear orden de pago con QR
+### 🔵 HU-008 — Crear orden de pago con QR
 **Como** Comercio verificado **quiero** digitar un monto y obtener un QR con
 expiración **para** cobrarle a un cliente cripto en segundos.
 
