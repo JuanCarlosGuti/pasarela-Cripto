@@ -223,7 +223,7 @@ Binance.
 - Se activa por perfil/propiedad (`pasarela.proveedores.simulado.habilitado=true`);
   jamás activo en producción (probado: con perfil `prod`, el bean no existe).
 
-### 🔵 HU-009 — Consultar estado de la orden
+### ✅ HU-009 — Consultar estado de la orden
 **Como** Comercio **quiero** consultar el estado de mis órdenes (y el Pagador el de
 la suya, por referencia pública) **para** saber en qué va cada cobro.
 
