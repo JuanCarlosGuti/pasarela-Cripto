@@ -28,15 +28,18 @@ script:post-response {
 }
 
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 3 (HU-008).
+  ✅ DISPONIBLE DESDE HU-008 (Sprint 3).
 
-  Requiere comercio VERIFICADO autenticado.
-  201 → contenido del QR, deeplink, referencia única y expiraEn;
-  la orden queda PENDIENTE_PAGO.
+  Requiere token de un comercio VERIFICADO (el `comercioId` sale del JWT).
+  201 → contenido del QR, deeplink, referencia única, expiraEn (ventana de
+  15 min); la orden queda PENDIENTE_PAGO. El proveedor es el simulado
+  hasta el Sprint 7.
 
   El script guarda `ordenId` y `referenciaPago` para las peticiones
   siguientes (consulta y webhook).
 
-  Caminos tristes: comercio PENDIENTE/SUSPENDIDO → 403; monto ≤ 0 o que
-  viola límites → 400/422 sin llamar al proveedor.
+  Caminos tristes: comercio PENDIENTE/SUSPENDIDO → 403; ADMIN → 403;
+  monto ≤ 0 → 400; monto sobre el tope → 422 y el intento queda en la
+  bitácora de operaciones inusuales; proveedor caído → 502 sin orden
+  fantasma.
 }

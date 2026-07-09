@@ -1,8 +1,10 @@
 package com.pasarela.comercios.infraestructura.entrada.rest;
 
 import com.pasarela.comercios.dominio.excepcion.ComercioInvalidoException;
+import com.pasarela.comercios.dominio.excepcion.ComercioNoAutorizadoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioNoEncontradoException;
 import com.pasarela.comercios.dominio.excepcion.ComercioYaRegistradoException;
+import com.pasarela.comercios.dominio.excepcion.LimiteExcedidoException;
 import com.pasarela.comercios.dominio.excepcion.NitInvalidoException;
 import com.pasarela.comercios.dominio.excepcion.VerificacionInvalidaException;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,18 @@ public class ManejadorDeErroresComercios {
 	@ExceptionHandler(ComercioNoEncontradoException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorResponse noEncontrado(ComercioNoEncontradoException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(ComercioNoAutorizadoException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public ErrorResponse noAutorizado(ComercioNoAutorizadoException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(LimiteExcedidoException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	public ErrorResponse limiteExcedido(LimiteExcedidoException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 
