@@ -310,7 +310,7 @@ queden cobros zombis pendientes para siempre.
   expiración vs. confirmación), **entonces** solo una de las dos transiciones gana y
   la otra se rechaza limpiamente — probado con Testcontainers.
 
-### 🔵 HU-015 — Reconciliación de órdenes atascadas
+### ✅ HU-015 — Reconciliación de órdenes atascadas
 **Como** Plataforma **quiero** consultar activamente al proveedor por órdenes
 atascadas **para** converger al estado correcto aunque un webhook nunca llegue
 (ADR-004).
@@ -328,7 +328,7 @@ atascadas **para** converger al estado correcto aunque un webhook nunca llegue
 
 ## Épica E7 — Liquidación y conciliación *(Sprint 5 / Fase 7)*
 
-### ⬜ HU-016 — Registro de liquidación
+### 🔵 HU-016 — Registro de liquidación
 **Como** Plataforma **quiero** registrar cada liquidación que el proveedor hace al
 comercio **para** que cada peso quede trazado (invariante #4 del producto).
 
