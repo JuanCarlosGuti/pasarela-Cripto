@@ -297,7 +297,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
 
 ## Épica E6 — Convergencia: jobs de respaldo *(Sprint 5 / Fase 6)*
 
-### ⬜ HU-014 — Expiración automática de órdenes
+### 🔵 HU-014 — Expiración automática de órdenes
 **Como** Sistema **quiero** expirar las órdenes vencidas sin pago **para** que no
 queden cobros zombis pendientes para siempre.
 
