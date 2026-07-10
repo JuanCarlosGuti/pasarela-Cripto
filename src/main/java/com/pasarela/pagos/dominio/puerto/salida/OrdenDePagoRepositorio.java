@@ -33,6 +33,13 @@ public interface OrdenDePagoRepositorio {
 	List<OrdenDePago> buscarPendientesExpiradas(Instant ahora, int limite);
 
 	/**
+	 * Órdenes PENDIENTE_PAGO creadas antes del instante dado — las
+	 * "atascadas" que la reconciliación consulta activamente al proveedor
+	 * (HU-015), como máximo {@code limite} por ciclo.
+	 */
+	List<OrdenDePago> buscarPendientesCreadasAntesDe(Instant limite, int maximo);
+
+	/**
 	 * Suma de las órdenes del comercio creadas en [desde, hasta) que
 	 * consumen cupo mensual (HU-007/HU-008): las pendientes y las pagadas;
 	 * las expiradas, fallidas y en revisión no cuentan.

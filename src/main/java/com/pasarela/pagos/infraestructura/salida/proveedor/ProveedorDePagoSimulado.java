@@ -45,18 +45,26 @@ public class ProveedorDePagoSimulado implements ProveedorDePagoPort {
 		NINGUNO, ERROR, TIMEOUT
 	}
 
+	/** Qué responde la consulta activa de la reconciliación (HU-015). */
+	public enum ResultadoDeConsulta {
+		NO_PAGADO, PAGADO, ERROR
+	}
+
 	private final ModoDeFallo modoDeFallo;
 	private final long milisegundosTimeout;
 	private final String secretoWebhook;
+	private final ResultadoDeConsulta resultadoDeConsulta;
 	private final ObjectMapper json = new ObjectMapper();
 
 	public ProveedorDePagoSimulado(
 			@Value("${pasarela.proveedores.simulado.modo-fallo:NINGUNO}") ModoDeFallo modoDeFallo,
 			@Value("${pasarela.proveedores.simulado.milisegundos-timeout:200}") long milisegundosTimeout,
-			@Value("${pasarela.proveedores.simulado.secreto-webhook}") String secretoWebhook) {
+			@Value("${pasarela.proveedores.simulado.secreto-webhook}") String secretoWebhook,
+			@Value("${pasarela.proveedores.simulado.resultado-consulta:NO_PAGADO}") ResultadoDeConsulta resultadoDeConsulta) {
 		this.modoDeFallo = modoDeFallo;
 		this.milisegundosTimeout = milisegundosTimeout;
 		this.secretoWebhook = secretoWebhook;
+		this.resultadoDeConsulta = resultadoDeConsulta;
 	}
 
 	@Override
@@ -123,6 +131,33 @@ public class ProveedorDePagoSimulado implements ProveedorDePagoPort {
 					"El webhook simulado no trae el campo obligatorio '" + campo + "'");
 		}
 		return valor.asText();
+	}
+
+	/**
+	 * Consulta activa (HU-015). En modo PAGADO fabrica el evento con id
+	 * DETERMINISTA por referencia ("evt-recon-<referencia>") — igual que el
+	 * proveedor real devolvería siempre el mismo evento para el mismo pago:
+	 * la idempotencia hace que reconciliar dos veces no duplique nada.
+	 */
+	@Override
+	public java.util.Optional<CobroConsultado> consultarCobro(
+			com.pasarela.pagos.dominio.modelo.ReferenciaPago referencia,
+			com.pasarela.compartido.dominio.modelo.Dinero monto) {
+		switch (resultadoDeConsulta) {
+			case ERROR -> throw new ProveedorDePagoNoDisponibleException(
+					"El simulador está configurado para fallar la consulta");
+			case NO_PAGADO -> {
+				return java.util.Optional.empty();
+			}
+			case PAGADO -> {
+				String carga = """
+						{"idEvento": "evt-recon-%s", "tipo": "PAGO_RECIBIDO", "referencia": "%s", "monto": %s, "pagadoEn": "%s"}
+						""".formatted(referencia.valor(), referencia.valor(),
+								monto.monto().toPlainString(), Instant.now()).trim();
+				return java.util.Optional.of(new CobroConsultado(carga, hmac(carga)));
+			}
+		}
+		return java.util.Optional.empty();
 	}
 
 	private String hmac(String carga) {
