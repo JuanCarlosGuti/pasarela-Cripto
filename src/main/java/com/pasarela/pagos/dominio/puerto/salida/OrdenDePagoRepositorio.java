@@ -3,12 +3,14 @@ package com.pasarela.pagos.dominio.puerto.salida;
 import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.compartido.dominio.modelo.IdOrden;
+import com.pasarela.pagos.dominio.modelo.EstadoOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Puerto de salida: lo que el dominio necesita para persistir órdenes.
@@ -45,5 +47,27 @@ public interface OrdenDePagoRepositorio {
 	 * las expiradas, fallidas y en revisión no cuentan.
 	 */
 	Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta);
+
+	/**
+	 * Total y cantidad de ventas del comercio en [desde, hasta) contando
+	 * SOLO los estados indicados (HU-018: la "venta efectiva" la define la
+	 * aplicación — órdenes cuyo pago ya fue detectado o posterior).
+	 */
+	VentasTotalizadas totalizarVentas(IdComercio comercioId, Instant desde, Instant hasta,
+			Set<EstadoOrden> estados);
+
+	/**
+	 * Órdenes del comercio creadas en [desde, hasta), de la más reciente a
+	 * la más vieja, paginadas (HU-018): el listado incluye TODOS los
+	 * estados — el comercio ve también sus pendientes y expiradas.
+	 */
+	PaginaDeOrdenes listarDelComercio(IdComercio comercioId, Instant desde, Instant hasta,
+			int pagina, int tamano);
+
+	record VentasTotalizadas(Dinero total, long cantidad) {
+	}
+
+	record PaginaDeOrdenes(List<OrdenDePago> ordenes, long totalElementos) {
+	}
 
 }

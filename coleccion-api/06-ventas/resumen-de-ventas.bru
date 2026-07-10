@@ -1,0 +1,26 @@
+meta {
+  name: Ventas del día y del mes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/ventas/resumen
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-018 (Sprint 6). Solo rol COMERCIO.
+
+  Totales y cantidad de ventas del día de hoy y del mes en curso (zona
+  America/Bogota) del comercio del token.
+
+  Definición de venta: el pago ya fue detectado o posterior
+  (PAGO_DETECTADO, CONVERTIDA, LIQUIDADA). Las pendientes, expiradas,
+  fallidas y en revisión NO suman.
+}
