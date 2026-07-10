@@ -16,6 +16,7 @@ import com.pasarela.pagos.dominio.puerto.salida.ProveedorDePagoPort;
 import com.pasarela.pagos.dominio.puerto.salida.ProveedorDePagoPort.WebhookDelProveedor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,24 +128,49 @@ public class ProcesarWebhookService implements ProcesarWebhookUseCase {
 		}
 
 		try {
-			orden.confirmarPago(
-					new EventoPago(webhook.referencia(), webhook.monto(), webhook.pagadoEn()),
-					ahora);
+			orden = confirmarYGuardar(orden, webhook, ahora);
 		} catch (OrdenNoPuedeConfirmarseException tardio) {
-			// camino triste: pago tardío o estado no confirmable → revisión manual
-			// con todos los datos para gestionar el reembolso vía proveedor (HU-012)
-			return dejarParaRevision(evento, comando.proveedor(), ahora,
-					"PAGO_TARDIO",
-					"El pago no puede confirmarse: " + tardio.getMessage(),
-					"Evento %s para la orden %s (estado %s, expiraba %s): requiere gestión manual del reembolso".formatted(
-							webhook.idExternoEvento(), orden.id().valor(),
-							orden.estado(), orden.expiraEn()));
+			return revisionPorPagoTardio(evento, comando.proveedor(), webhook, orden, ahora);
+		} catch (OptimisticLockingFailureException carrera) {
+			// la expiración ganó la carrera entre nuestra lectura y escritura
+			// (HU-014): recargar y decidir de nuevo por el camino normal
+			OrdenDePago recargada = ordenes.buscarPorReferencia(webhook.referencia())
+					.orElseThrow(() -> new IllegalStateException(
+							"La orden desapareció durante la carrera: " + webhook.referencia().valor()));
+			try {
+				orden = confirmarYGuardar(recargada, webhook, ahora);
+			} catch (OrdenNoPuedeConfirmarseException tardio) {
+				return revisionPorPagoTardio(
+						evento, comando.proveedor(), webhook, recargada, ahora);
+			}
 		}
-		ordenes.guardar(orden);
 		notificarSinRevertir(orden);
 		evento.marcarProcesado();
 		eventos.guardar(evento);
 		return ResultadoWebhook.CONFIRMADO;
+	}
+
+	private OrdenDePago confirmarYGuardar(OrdenDePago orden, WebhookDelProveedor webhook,
+			Instant ahora) {
+		orden.confirmarPago(
+				new EventoPago(webhook.referencia(), webhook.monto(), webhook.pagadoEn()),
+				ahora);
+		return ordenes.guardar(orden);
+	}
+
+	/**
+	 * Camino triste (HU-012): pago tardío o estado no confirmable → revisión
+	 * manual con todos los datos para gestionar el reembolso vía proveedor.
+	 */
+	private ResultadoWebhook revisionPorPagoTardio(EventoProveedor evento,
+			String proveedorNombre, WebhookDelProveedor webhook, OrdenDePago orden,
+			Instant ahora) {
+		return dejarParaRevision(evento, proveedorNombre, ahora,
+				"PAGO_TARDIO",
+				"El pago no puede confirmarse en el estado actual de la orden",
+				"Evento %s para la orden %s (estado %s, expiraba %s): requiere gestión manual del reembolso".formatted(
+						webhook.idExternoEvento(), orden.id().valor(),
+						orden.estado(), orden.expiraEn()));
 	}
 
 	private ResultadoWebhook dejarParaRevision(EventoProveedor evento, String proveedorNombre,
