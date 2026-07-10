@@ -97,6 +97,70 @@ class LiquidacionesApiTest {
 	}
 
 	@Test
+	void laConciliacion_pasaAConciliadaSiCoincide_yADiscrepanciaConAlertaSiNo() throws Exception {
+		Comercio comercio = comercioVerificado("890300279-4", "conc@liquidaciones.co");
+		String orden1 = ordenConvertida(comercio, 40000, "evt-conc-1");
+		String orden2 = ordenConvertida(comercio, 60000, "evt-conc-2");
+
+		MvcResult creada = mvc.perform(post("/api/liquidaciones")
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"comercioId": "%s", "ordenes": ["%s", "%s"], "referenciaProveedor": "liq-conc-1"}
+								""".formatted(comercio.id(), orden1, orden2)))
+				.andExpect(status().isCreated()).andReturn();
+		String liq1 = json.readTree(creada.getResponse().getContentAsString())
+				.get("id").asText();
+
+		// el proveedor reporta EXACTAMENTE lo registrado → CONCILIADA
+		mvc.perform(post("/api/liquidaciones/%s/conciliacion".formatted(liq1))
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"montoBruto": 100000, "ordenes": ["%s", "%s"]}
+								""".formatted(orden1, orden2)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.estado").value("CONCILIADA"))
+				.andExpect(jsonPath("$.detalleDiscrepancia").value(org.hamcrest.Matchers.nullValue()));
+
+		// re-conciliar una CONCILIADA → 409: la decisión no se pisa
+		mvc.perform(post("/api/liquidaciones/%s/conciliacion".formatted(liq1))
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"montoBruto": 100000, "ordenes": ["%s", "%s"]}
+								""".formatted(orden1, orden2)))
+				.andExpect(status().isConflict());
+
+		// segunda liquidación con reporte que NO cuadra → DISCREPANCIA + alerta
+		String orden3 = ordenConvertida(comercio, 50000, "evt-conc-3");
+		MvcResult creada2 = mvc.perform(post("/api/liquidaciones")
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"comercioId": "%s", "ordenes": ["%s"], "referenciaProveedor": "liq-conc-2"}
+								""".formatted(comercio.id(), orden3)))
+				.andExpect(status().isCreated()).andReturn();
+		String liq2 = json.readTree(creada2.getResponse().getContentAsString())
+				.get("id").asText();
+
+		mvc.perform(post("/api/liquidaciones/%s/conciliacion".formatted(liq2))
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"montoBruto": 49000, "ordenes": ["%s"]}
+								""".formatted(orden3)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.estado").value("DISCREPANCIA"))
+				.andExpect(jsonPath("$.detalleDiscrepancia").value(
+						org.hamcrest.Matchers.containsString("49000")));
+
+		assertThat(jdbc.queryForObject(
+				"select count(*) from bitacora_operaciones where tipo = 'DISCREPANCIA_CONCILIACION'",
+				Integer.class)).isGreaterThanOrEqualTo(1);
+	}
+
+	@Test
 	void unaOrdenSinConvertir_noEsLiquidable_422() throws Exception {
 		Comercio comercio = comercioVerificado("860531287-5", "sinconv@liquidaciones.co");
 		String pendiente = crearOrden(comercio.token(), 40000); // sigue PENDIENTE_PAGO

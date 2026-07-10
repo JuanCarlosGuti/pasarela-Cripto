@@ -106,6 +106,75 @@ class LiquidacionTest {
 	}
 
 	@Nested
+	class Conciliacion {
+
+		@Test
+		void siLosDatosDelProveedorCoinciden_pasaAConciliada() {
+			Liquidacion liquidacion = Liquidacion.registrar(COMERCIO,
+					List.of(orden(40000), orden(60000)), TASA, "liq-c-1", AHORA);
+
+			liquidacion.conciliar(new ReporteDelProveedor(
+					Dinero.cop(100000), liquidacion.ordenes()));
+
+			assertThat(liquidacion.estado()).isEqualTo(EstadoLiquidacion.CONCILIADA);
+			assertThat(liquidacion.detalleDiscrepancia()).isNull();
+		}
+
+		@Test
+		void unMontoDistinto_marcaDiscrepancia_conAmbosMontosEnElDetalle() {
+			Liquidacion liquidacion = Liquidacion.registrar(COMERCIO,
+					List.of(orden(40000)), TASA, "liq-c-2", AHORA);
+
+			liquidacion.conciliar(new ReporteDelProveedor(
+					Dinero.cop(39000), liquidacion.ordenes()));
+
+			assertThat(liquidacion.estado()).isEqualTo(EstadoLiquidacion.DISCREPANCIA);
+			assertThat(liquidacion.detalleDiscrepancia())
+					.contains("40000").contains("39000");
+		}
+
+		@Test
+		void ordenesFaltantesOSobrantes_marcanDiscrepancia_conLosIdsEnElDetalle() {
+			OrdenLiquidable registrada = orden(40000);
+			IdOrden sobrante = IdOrden.generar();
+			Liquidacion liquidacion = Liquidacion.registrar(COMERCIO,
+					List.of(registrada), TASA, "liq-c-3", AHORA);
+
+			// el proveedor reporta una orden distinta: la nuestra falta, la suya sobra
+			liquidacion.conciliar(new ReporteDelProveedor(
+					Dinero.cop(40000), List.of(sobrante)));
+
+			assertThat(liquidacion.estado()).isEqualTo(EstadoLiquidacion.DISCREPANCIA);
+			assertThat(liquidacion.detalleDiscrepancia())
+					.contains(registrada.id().valor().toString())  // faltante
+					.contains(sobrante.valor().toString());        // sobrante
+		}
+
+		@Test
+		void unaLiquidacionYaConciliada_noSeReconcilia() {
+			Liquidacion liquidacion = Liquidacion.registrar(COMERCIO,
+					List.of(orden(40000)), TASA, "liq-c-4", AHORA);
+			ReporteDelProveedor reporte = new ReporteDelProveedor(
+					Dinero.cop(40000), liquidacion.ordenes());
+			liquidacion.conciliar(reporte);
+
+			assertThatThrownBy(() -> liquidacion.conciliar(reporte))
+					.isInstanceOf(com.pasarela.liquidaciones.dominio.excepcion.ConciliacionInvalidaException.class);
+			assertThat(liquidacion.estado()).isEqualTo(EstadoLiquidacion.CONCILIADA);
+		}
+
+		@Test
+		void conciliar_conReporteNulo_lanzaExcepcion() {
+			Liquidacion liquidacion = Liquidacion.registrar(COMERCIO,
+					List.of(orden(40000)), TASA, "liq-c-5", AHORA);
+
+			assertThatThrownBy(() -> liquidacion.conciliar(null))
+					.isInstanceOf(LiquidacionInvalidaException.class);
+			assertThat(liquidacion.estado()).isEqualTo(EstadoLiquidacion.REGISTRADA);
+		}
+	}
+
+	@Nested
 	class Reconstitucion {
 
 		@Test
@@ -117,7 +186,7 @@ class LiquidacionTest {
 					original.id(), original.comercioId(), original.ordenes(),
 					original.montoBruto(), original.comisionPlataforma(),
 					original.montoNetoComercio(), original.referenciaProveedor(),
-					original.estado(), original.liquidadaEn());
+					original.estado(), original.liquidadaEn(), null);
 
 			assertThat(reconstituida.id()).isEqualTo(original.id());
 			assertThat(reconstituida.montoBruto()).isEqualTo(original.montoBruto());
@@ -131,23 +200,23 @@ class LiquidacionTest {
 
 			assertThatThrownBy(() -> Liquidacion.reconstituir(null, c.comercioId(), c.ordenes(),
 					c.montoBruto(), c.comisionPlataforma(), c.montoNetoComercio(),
-					c.referenciaProveedor(), c.estado(), c.liquidadaEn()))
+					c.referenciaProveedor(), c.estado(), c.liquidadaEn(), null))
 					.isInstanceOf(LiquidacionInvalidaException.class);
 			assertThatThrownBy(() -> Liquidacion.reconstituir(c.id(), null, c.ordenes(),
 					c.montoBruto(), c.comisionPlataforma(), c.montoNetoComercio(),
-					c.referenciaProveedor(), c.estado(), c.liquidadaEn()))
+					c.referenciaProveedor(), c.estado(), c.liquidadaEn(), null))
 					.isInstanceOf(LiquidacionInvalidaException.class);
 			assertThatThrownBy(() -> Liquidacion.reconstituir(c.id(), c.comercioId(), List.of(),
 					c.montoBruto(), c.comisionPlataforma(), c.montoNetoComercio(),
-					c.referenciaProveedor(), c.estado(), c.liquidadaEn()))
+					c.referenciaProveedor(), c.estado(), c.liquidadaEn(), null))
 					.isInstanceOf(LiquidacionInvalidaException.class);
 			assertThatThrownBy(() -> Liquidacion.reconstituir(c.id(), c.comercioId(), c.ordenes(),
 					c.montoBruto(), c.comisionPlataforma(), c.montoNetoComercio(),
-					c.referenciaProveedor(), null, c.liquidadaEn()))
+					c.referenciaProveedor(), null, c.liquidadaEn(), null))
 					.isInstanceOf(LiquidacionInvalidaException.class);
 			assertThatThrownBy(() -> Liquidacion.reconstituir(c.id(), c.comercioId(), c.ordenes(),
 					c.montoBruto(), c.comisionPlataforma(), c.montoNetoComercio(),
-					c.referenciaProveedor(), c.estado(), null))
+					c.referenciaProveedor(), c.estado(), null, null))
 					.isInstanceOf(LiquidacionInvalidaException.class);
 		}
 
@@ -160,7 +229,7 @@ class LiquidacionTest {
 			assertThatThrownBy(() -> Liquidacion.reconstituir(
 					original.id(), original.comercioId(), original.ordenes(),
 					Dinero.cop(40000), Dinero.cop(1000), Dinero.cop(38999),
-					original.referenciaProveedor(), original.estado(), original.liquidadaEn()))
+					original.referenciaProveedor(), original.estado(), original.liquidadaEn(), null))
 					.isInstanceOf(LiquidacionInvalidaException.class)
 					.hasMessageContaining("no cuadran");
 		}
@@ -177,7 +246,7 @@ class LiquidacionTest {
 					liquidacion.id(), liquidacion.comercioId(), liquidacion.ordenes(),
 					liquidacion.montoBruto(), liquidacion.comisionPlataforma(),
 					liquidacion.montoNetoComercio(), liquidacion.referenciaProveedor(),
-					liquidacion.estado(), liquidacion.liquidadaEn());
+					liquidacion.estado(), liquidacion.liquidadaEn(), null);
 			Liquidacion otra = Liquidacion.registrar(COMERCIO,
 					List.of(orden(50000)), TASA, "liq-prov-009", AHORA);
 

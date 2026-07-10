@@ -34,6 +34,7 @@ public class Liquidacion {
 	private final String referenciaProveedor;
 	private final Instant liquidadaEn;
 	private EstadoLiquidacion estado;
+	private String detalleDiscrepancia;
 
 	private Liquidacion(IdLiquidacion id, IdComercio comercioId, List<IdOrden> ordenes,
 			Dinero montoBruto, Dinero comisionPlataforma, Dinero montoNetoComercio,
@@ -80,11 +81,54 @@ public class Liquidacion {
 				EstadoLiquidacion.REGISTRADA);
 	}
 
+	/**
+	 * Concilia lo registrado contra lo reportado por el proveedor (HU-017):
+	 * si todo coincide pasa a CONCILIADA; CUALQUIER diferencia (monto,
+	 * órdenes faltantes o sobrantes) la deja en DISCREPANCIA con el detalle
+	 * completo — jamás se cuadra en silencio. Solo una liquidación
+	 * REGISTRADA puede conciliarse.
+	 */
+	public void conciliar(ReporteDelProveedor reporte) {
+		if (reporte == null) {
+			throw new LiquidacionInvalidaException(
+					"La conciliación requiere el reporte del proveedor");
+		}
+		if (estado != EstadoLiquidacion.REGISTRADA) {
+			throw new com.pasarela.liquidaciones.dominio.excepcion.ConciliacionInvalidaException(
+					"La liquidación ya fue conciliada (estado actual: " + estado + ")");
+		}
+		StringBuilder diferencias = new StringBuilder();
+		if (!montoBruto.equals(reporte.montoBruto())) {
+			diferencias.append("monto bruto registrado %s vs reportado %s; ".formatted(
+					montoBruto.monto().toPlainString(),
+					reporte.montoBruto().monto().toPlainString()));
+		}
+		List<IdOrden> faltantes = ordenes.stream()
+				.filter(orden -> !reporte.ordenes().contains(orden)).toList();
+		List<IdOrden> sobrantes = reporte.ordenes().stream()
+				.filter(orden -> !ordenes.contains(orden)).toList();
+		if (!faltantes.isEmpty()) {
+			diferencias.append("órdenes registradas que el proveedor no reporta: %s; ".formatted(
+					faltantes.stream().map(orden -> orden.valor().toString()).toList()));
+		}
+		if (!sobrantes.isEmpty()) {
+			diferencias.append("órdenes reportadas que no están registradas: %s; ".formatted(
+					sobrantes.stream().map(orden -> orden.valor().toString()).toList()));
+		}
+		if (diferencias.isEmpty()) {
+			this.estado = EstadoLiquidacion.CONCILIADA;
+			this.detalleDiscrepancia = null;
+		} else {
+			this.estado = EstadoLiquidacion.DISCREPANCIA;
+			this.detalleDiscrepancia = diferencias.toString().trim();
+		}
+	}
+
 	/** Rehidratación desde persistencia; re-verifica que el dinero cuadre. */
 	public static Liquidacion reconstituir(IdLiquidacion id, IdComercio comercioId,
 			List<IdOrden> ordenes, Dinero montoBruto, Dinero comisionPlataforma,
 			Dinero montoNetoComercio, String referenciaProveedor,
-			EstadoLiquidacion estado, Instant liquidadaEn) {
+			EstadoLiquidacion estado, Instant liquidadaEn, String detalleDiscrepancia) {
 		validarObligatorio(id, "el id");
 		validarObligatorio(comercioId, "el comercio");
 		validarObligatorio(estado, "el estado");
@@ -100,8 +144,10 @@ public class Liquidacion {
 							montoNetoComercio.monto().toPlainString(),
 							montoBruto.monto().toPlainString()));
 		}
-		return new Liquidacion(id, comercioId, ordenes, montoBruto, comisionPlataforma,
-				montoNetoComercio, referenciaProveedor, liquidadaEn, estado);
+		Liquidacion liquidacion = new Liquidacion(id, comercioId, ordenes, montoBruto,
+				comisionPlataforma, montoNetoComercio, referenciaProveedor, liquidadaEn, estado);
+		liquidacion.detalleDiscrepancia = detalleDiscrepancia;
+		return liquidacion;
 	}
 
 	private static void validarObligatorio(Object valor, String nombre) {
@@ -141,6 +187,11 @@ public class Liquidacion {
 
 	public EstadoLiquidacion estado() {
 		return estado;
+	}
+
+	/** Detalle de la discrepancia detectada por la conciliación; null si no hay. */
+	public String detalleDiscrepancia() {
+		return detalleDiscrepancia;
 	}
 
 	public Instant liquidadaEn() {

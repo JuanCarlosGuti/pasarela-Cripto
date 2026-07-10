@@ -27,9 +27,16 @@ public class ManejadorDeErroresLiquidaciones {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 
-	@ExceptionHandler(OrdenYaLiquidadaException.class)
+	@ExceptionHandler({OrdenYaLiquidadaException.class,
+			com.pasarela.liquidaciones.dominio.excepcion.ConciliacionInvalidaException.class})
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public ErrorResponse ordenYaLiquidada(OrdenYaLiquidadaException excepcion) {
+	public ErrorResponse conflicto(RuntimeException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(com.pasarela.liquidaciones.dominio.excepcion.LiquidacionNoEncontradaException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorResponse noEncontrada(RuntimeException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 
