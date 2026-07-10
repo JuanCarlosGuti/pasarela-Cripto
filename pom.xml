@@ -135,12 +135,15 @@
 						<param>com.pasarela.pagos.dominio.*</param>
 						<param>com.pasarela.comercios.dominio.*</param>
 						<param>com.pasarela.seguridad.dominio.*</param>
+						<!-- entregable del Sprint 4: el servicio del webhook también se muta -->
+						<param>com.pasarela.pagos.aplicacion.ProcesarWebhookService</param>
 					</targetClasses>
 					<targetTests>
 						<param>com.pasarela.compartido.dominio.*</param>
 						<param>com.pasarela.pagos.dominio.*</param>
 						<param>com.pasarela.comercios.dominio.*</param>
 						<param>com.pasarela.seguridad.dominio.*</param>
+						<param>com.pasarela.pagos.aplicacion.ProcesarWebhookServiceTest</param>
 					</targetTests>
 					<mutationThreshold>100</mutationThreshold>
 					<timestampedReports>false</timestampedReports>

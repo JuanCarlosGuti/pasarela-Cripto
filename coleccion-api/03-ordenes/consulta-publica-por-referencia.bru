@@ -17,6 +17,11 @@ docs {
   SOLO estado y monto — nada del comercio ni datos internos (el contrato
   estricto está probado en tests). Referencia inexistente → 404.
 
+  Es el endpoint de POLLING del "PAGADO ✓" (ADR-005): el frontend consulta
+  cada 2-3 s hasta ver PAGO_DETECTADO. Responde Cache-Control: no-store
+  para que ningún proxy sirva un estado viejo. La caja del comercio hace
+  lo mismo con "Consultar orden".
+
   Bonus del sprint: el contrato OpenAPI completo para el frontend está en
   {{baseUrl}}/v3/api-docs y el Swagger UI en {{baseUrl}}/swagger-ui.html
 }

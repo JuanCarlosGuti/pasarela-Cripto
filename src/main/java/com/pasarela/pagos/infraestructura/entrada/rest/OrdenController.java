@@ -6,6 +6,7 @@ import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase;
 import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase.ComandoCrearOrden;
 import com.pasarela.pagos.dominio.puerto.entrada.CrearOrdenUseCase.OrdenCreada;
 import jakarta.validation.Valid;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -34,14 +35,18 @@ public class OrdenController {
 	/**
 	 * Detalle para el dueño (HU-009): el ADMIN ve cualquiera; un COMERCIO
 	 * solo las suyas — pedir otra responde 404, igual que una inexistente.
+	 * Es el endpoint de polling de la caja (ADR-005): sin caché intermedio.
 	 */
 	@GetMapping("/{id}")
-	public OrdenDetalleResponse consultar(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
+	public ResponseEntity<OrdenDetalleResponse> consultar(
+			@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
 		UUID comercioDelSolicitante = "ADMIN".equals(jwt.getClaimAsString("rol"))
 				? null
 				: UUID.fromString(jwt.getClaimAsString("comercioId"));
-		return OrdenDetalleResponse.de(consultarOrden.consultar(
-				new ComandoConsultarOrden(id, comercioDelSolicitante)));
+		return ResponseEntity.ok()
+				.cacheControl(CacheControl.noStore())
+				.body(OrdenDetalleResponse.de(consultarOrden.consultar(
+						new ComandoConsultarOrden(id, comercioDelSolicitante))));
 	}
 
 	/** Solo rol COMERCIO (ver ConfiguracionDeSeguridadHttp): el comercio sale del token. */
