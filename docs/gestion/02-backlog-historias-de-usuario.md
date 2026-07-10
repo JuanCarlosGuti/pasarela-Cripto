@@ -282,7 +282,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
   máquina de estados lo tolera según la matriz; nada se corrompe.
 - Cada caso tiene su **test de API de extremo a extremo** (no solo unitario).
 
-### 🔵 HU-013 — Notificación "PAGADO ✓" al comercio
+### ✅ HU-013 — Notificación "PAGADO ✓" al comercio
 **Como** Comercio **quiero** ver la confirmación en mi pantalla en tiempo real
 **para** entregar el producto con confianza.
 

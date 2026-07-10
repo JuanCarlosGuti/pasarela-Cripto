@@ -180,7 +180,7 @@ maestro (abogado fintech, contratos).
 | 1 — Dominio + persistencia | ✅ cerrado | `v0.1.0` |
 | 2 — Comercios + seguridad | ✅ cerrado | `v0.2.0` |
 | 3 — Cobro QR simulado | ✅ cerrado | `v0.3.0` |
-| 4 — Webhook + idempotencia | 🔵 en curso | — |
+| 4 — Webhook + idempotencia | ✅ cerrado | `v0.4.0` |
 | 5 — Jobs + liquidación | ⬜ pendiente | — |
 | 6 — Dashboard | ⬜ pendiente | — |
 | 7 — Binance real | ⬜ pendiente | — |
