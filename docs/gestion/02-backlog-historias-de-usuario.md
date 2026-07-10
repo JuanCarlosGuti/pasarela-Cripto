@@ -266,7 +266,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
   simultáneos contra PostgreSQL real vía Testcontainers) produce una sola
   confirmación — la constraint es la última línea de defensa y se ejercita de verdad.
 
-### 🔵 HU-012 — Caminos tristes del webhook
+### ✅ HU-012 — Caminos tristes del webhook
 **Como** Plataforma **quiero** manejar explícitamente cada webhook anómalo
 **para** que ningún caso raro deje una orden inconsistente ni pase inadvertido.
 
@@ -282,7 +282,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
   máquina de estados lo tolera según la matriz; nada se corrompe.
 - Cada caso tiene su **test de API de extremo a extremo** (no solo unitario).
 
-### ⬜ HU-013 — Notificación "PAGADO ✓" al comercio
+### 🔵 HU-013 — Notificación "PAGADO ✓" al comercio
 **Como** Comercio **quiero** ver la confirmación en mi pantalla en tiempo real
 **para** entregar el producto con confianza.
 
