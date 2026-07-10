@@ -3,6 +3,7 @@ package com.pasarela.pagos.aplicacion;
 import com.pasarela.compartido.dominio.puerto.BitacoraDeOperaciones;
 import com.pasarela.compartido.dominio.puerto.BitacoraDeOperaciones.RegistroDeOperacion;
 import com.pasarela.pagos.dominio.excepcion.FirmaDeWebhookInvalidaException;
+import com.pasarela.pagos.dominio.excepcion.OrdenNoPuedeConfirmarseException;
 import com.pasarela.pagos.dominio.modelo.EventoPago;
 import com.pasarela.pagos.dominio.modelo.EventoProveedor;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
@@ -88,32 +89,70 @@ public class ProcesarWebhookService implements ProcesarWebhookUseCase {
 			return ResultadoWebhook.DUPLICADO;
 		}
 
-		Optional<OrdenDePago> orden = ordenes.buscarPorReferencia(webhook.referencia());
-		if (orden.isEmpty()) {
-			return dejarParaRevision(evento, comando.proveedor(), webhook, ahora);
+		Optional<OrdenDePago> ordenEncontrada = ordenes.buscarPorReferencia(webhook.referencia());
+		if (ordenEncontrada.isEmpty()) {
+			return dejarParaRevision(evento, comando.proveedor(), ahora,
+					"WEBHOOK_SIN_ORDEN",
+					"No existe una orden con la referencia del webhook",
+					"Evento %s sin orden correspondiente (referencia %s)".formatted(
+							webhook.idExternoEvento(), webhook.referencia().valor()));
+		}
+		OrdenDePago orden = ordenEncontrada.get();
+
+		// camino triste: webhook fuera de orden o tipo aún no soportado (HU-012)
+		if (!"PAGO_RECIBIDO".equals(webhook.tipo())) {
+			return dejarParaRevision(evento, comando.proveedor(), ahora,
+					"WEBHOOK_FUERA_DE_ORDEN",
+					"Tipo de evento no aplicable al estado de la orden: " + webhook.tipo(),
+					"Evento %s de tipo %s para la orden %s (estado %s): la máquina de estados lo tolera sin corromper nada".formatted(
+							webhook.idExternoEvento(), webhook.tipo(),
+							orden.id().valor(), orden.estado()));
 		}
 
-		orden.get().confirmarPago(
-				new EventoPago(webhook.referencia(), webhook.monto(), webhook.pagadoEn()),
-				ahora);
-		ordenes.guardar(orden.get());
-		notificarSinRevertir(orden.get());
+		// camino triste: monto distinto al esperado → EN_REVISION (HU-012)
+		if (!orden.monto().equals(webhook.monto())) {
+			orden.marcarComoFallida(
+					"Monto del pago distinto al esperado: se esperaba %s y llegó %s".formatted(
+							orden.monto().monto().toPlainString(),
+							webhook.monto().monto().toPlainString()),
+					ahora);
+			orden.escalarARevision(ahora);
+			ordenes.guardar(orden);
+			return dejarParaRevision(evento, comando.proveedor(), ahora,
+					"MONTO_DISTINTO",
+					"Monto del pago distinto al esperado",
+					"Evento %s con monto %s para la orden %s que esperaba %s: orden en revisión".formatted(
+							webhook.idExternoEvento(), webhook.monto().monto().toPlainString(),
+							orden.id().valor(), orden.monto().monto().toPlainString()));
+		}
+
+		try {
+			orden.confirmarPago(
+					new EventoPago(webhook.referencia(), webhook.monto(), webhook.pagadoEn()),
+					ahora);
+		} catch (OrdenNoPuedeConfirmarseException tardio) {
+			// camino triste: pago tardío o estado no confirmable → revisión manual
+			// con todos los datos para gestionar el reembolso vía proveedor (HU-012)
+			return dejarParaRevision(evento, comando.proveedor(), ahora,
+					"PAGO_TARDIO",
+					"El pago no puede confirmarse: " + tardio.getMessage(),
+					"Evento %s para la orden %s (estado %s, expiraba %s): requiere gestión manual del reembolso".formatted(
+							webhook.idExternoEvento(), orden.id().valor(),
+							orden.estado(), orden.expiraEn()));
+		}
+		ordenes.guardar(orden);
+		notificarSinRevertir(orden);
 		evento.marcarProcesado();
 		eventos.guardar(evento);
 		return ResultadoWebhook.CONFIRMADO;
 	}
 
 	private ResultadoWebhook dejarParaRevision(EventoProveedor evento, String proveedorNombre,
-			WebhookDelProveedor webhook, Instant ahora) {
-		evento.marcarParaRevision(
-				"No existe una orden con la referencia del webhook");
+			Instant ahora, String tipoBitacora, String notaRevision, String detalleBitacora) {
+		evento.marcarParaRevision(notaRevision);
 		eventos.guardar(evento);
 		bitacora.registrar(new RegistroDeOperacion(
-				"WEBHOOK_SIN_ORDEN",
-				proveedorNombre,
-				"Evento %s sin orden correspondiente (referencia %s)".formatted(
-						webhook.idExternoEvento(), webhook.referencia().valor()),
-				ahora));
+				tipoBitacora, proveedorNombre, detalleBitacora, ahora));
 		return ResultadoWebhook.PARA_REVISION;
 	}
 

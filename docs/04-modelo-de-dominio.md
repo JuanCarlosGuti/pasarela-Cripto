@@ -84,10 +84,16 @@ contexto de pagos.
 | `CREADA` | cobro creado en proveedor | `PENDIENTE_PAGO` |
 | `PENDIENTE_PAGO` | pago recibido (webhook) | `PAGO_DETECTADO` |
 | `PENDIENTE_PAGO` | expiración | `EXPIRADA` |
+| `PENDIENTE_PAGO` | pago inválido (p. ej. monto errado, HU-012) | `FALLIDA` |
 | `PAGO_DETECTADO` | conversión confirmada | `CONVERTIDA` |
 | `PAGO_DETECTADO` | error/pago inválido | `FALLIDA` |
 | `CONVERTIDA` | liquidación confirmada | `LIQUIDADA` |
 | `FALLIDA` | escalamiento | `EN_REVISION` |
+
+> *Nota (HU-012):* un pago inválido puede detectarse estando la orden
+> `PENDIENTE_PAGO` — el caso típico es un webhook con monto distinto al
+> esperado. La orden pasa a `FALLIDA` (con motivo) y se escala de inmediato
+> a `EN_REVISION` para gestión manual.
 
 Estados **terminales:** `LIQUIDADA` (éxito), `EXPIRADA` (sin pago), `EN_REVISION`
 (requiere intervención manual).
