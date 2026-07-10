@@ -238,7 +238,7 @@ la suya, por referencia pública) **para** saber en qué va cada cobro.
 
 ## Épica E5 — Webhook e idempotencia *(Sprint 4 / Fase 5 — LA CRÍTICA)*
 
-### ⬜ HU-010 — Confirmación de pago por webhook
+### 🔵 HU-010 — Confirmación de pago por webhook
 **Como** Sistema **quiero** procesar la notificación de pago del proveedor
 **para** que el comercio vea "PAGADO ✓" en segundos.
 
