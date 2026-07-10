@@ -44,6 +44,9 @@ public class LiquidacionJpaEntity {
 	@Column(name = "liquidada_en", nullable = false)
 	private Instant liquidadaEn;
 
+	@Column(name = "detalle_discrepancia", length = 1000)
+	private String detalleDiscrepancia;
+
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "liquidacion_ordenes",
 			joinColumns = @JoinColumn(name = "liquidacion_id"))
@@ -57,7 +60,7 @@ public class LiquidacionJpaEntity {
 	LiquidacionJpaEntity(UUID id, UUID comercioId, BigDecimal montoBruto,
 			BigDecimal comisionPlataforma, BigDecimal montoNetoComercio,
 			String referenciaProveedor, String estado, Instant liquidadaEn,
-			List<UUID> ordenes) {
+			List<UUID> ordenes, String detalleDiscrepancia) {
 		this.id = id;
 		this.comercioId = comercioId;
 		this.montoBruto = montoBruto;
@@ -67,6 +70,7 @@ public class LiquidacionJpaEntity {
 		this.estado = estado;
 		this.liquidadaEn = liquidadaEn;
 		this.ordenes = ordenes;
+		this.detalleDiscrepancia = detalleDiscrepancia;
 	}
 
 	UUID id() {
@@ -103,6 +107,10 @@ public class LiquidacionJpaEntity {
 
 	List<UUID> ordenes() {
 		return ordenes;
+	}
+
+	String detalleDiscrepancia() {
+		return detalleDiscrepancia;
 	}
 
 }

@@ -1,0 +1,35 @@
+meta {
+  name: Conciliar liquidación (admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/liquidaciones/{{liquidacionId}}/conciliacion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "montoBruto": 100000,
+    "ordenes": ["{{ordenId}}"]
+  }
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-017 (Sprint 5). Solo rol ADMIN.
+
+  Compara lo registrado contra lo que el proveedor reporta haber
+  liquidado. Coincide todo → CONCILIADA. CUALQUIER diferencia (monto
+  bruto, órdenes faltantes o sobrantes) → DISCREPANCIA con el detalle
+  completo en la respuesta y alerta en la bitácora — jamás se cuadra en
+  silencio.
+
+  Define `liquidacionId` con el id devuelto por "Registrar liquidación".
+  Re-conciliar una ya conciliada → 409 (la decisión no se pisa).
+}

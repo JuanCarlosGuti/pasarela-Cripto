@@ -23,7 +23,8 @@ public class LiquidacionJpaMapper {
 				liquidacion.referenciaProveedor(),
 				liquidacion.estado().name(),
 				liquidacion.liquidadaEn(),
-				liquidacion.ordenes().stream().map(IdOrden::valor).toList());
+				liquidacion.ordenes().stream().map(IdOrden::valor).toList(),
+				liquidacion.detalleDiscrepancia());
 	}
 
 	Liquidacion aDominio(LiquidacionJpaEntity entidad) {
@@ -36,7 +37,8 @@ public class LiquidacionJpaMapper {
 				new Dinero(entidad.montoNetoComercio(), Moneda.COP),
 				entidad.referenciaProveedor(),
 				EstadoLiquidacion.valueOf(entidad.estado()),
-				entidad.liquidadaEn());
+				entidad.liquidadaEn(),
+				entidad.detalleDiscrepancia());
 	}
 
 }
