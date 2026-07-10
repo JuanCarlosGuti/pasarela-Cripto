@@ -29,6 +29,20 @@ public interface ProveedorDePagoPort {
 	boolean firmaValida(String cargaCruda, String firma);
 
 	/**
+	 * Consulta activa del estado de un cobro (HU-015, reconciliación). Si el
+	 * proveedor reporta el pago, devuelve el evento TAL COMO lo habría
+	 * enviado el webhook (carga cruda + firma): la reconciliación confirma
+	 * por la misma ruta idempotente, sin duplicar lógica. Vacío = aún sin
+	 * pago. El monto viaja solo para que el simulador pueda fabricar el
+	 * evento; el adaptador real lo ignora.
+	 *
+	 * @throws com.pasarela.pagos.dominio.excepcion.ProveedorDePagoNoDisponibleException
+	 *         si el proveedor no responde; el job lo registra y reintenta en
+	 *         el siguiente ciclo.
+	 */
+	java.util.Optional<CobroConsultado> consultarCobro(ReferenciaPago referencia, Dinero monto);
+
+	/**
 	 * Traduce el payload del proveedor al lenguaje del dominio.
 	 *
 	 * @throws com.pasarela.pagos.dominio.excepcion.WebhookInvalidoException
@@ -44,6 +58,10 @@ public interface ProveedorDePagoPort {
 
 	record WebhookDelProveedor(String idExternoEvento, String tipo,
 			ReferenciaPago referencia, Dinero monto, Instant pagadoEn) {
+	}
+
+	/** El pago visto por consulta activa, en el mismo formato del webhook. */
+	record CobroConsultado(String cargaCruda, String firma) {
 	}
 
 }

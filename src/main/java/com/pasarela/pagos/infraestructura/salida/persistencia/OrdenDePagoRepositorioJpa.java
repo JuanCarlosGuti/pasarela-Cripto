@@ -64,6 +64,16 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 	}
 
 	@Override
+	public List<OrdenDePago> buscarPendientesCreadasAntesDe(Instant limite, int maximo) {
+		return jpa.findByEstadoAndCreadaEnBefore(
+						EstadoOrden.PENDIENTE_PAGO.name(), limite,
+						PageRequest.of(0, maximo, Sort.by("creadaEn")))
+				.stream()
+				.map(mapper::aDominio)
+				.toList();
+	}
+
+	@Override
 	public Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta) {
 		return new Dinero(
 				jpa.sumarMontos(comercioId.valor(), desde, hasta, ESTADOS_QUE_CONSUMEN_CUPO),
