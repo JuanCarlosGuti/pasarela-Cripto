@@ -133,7 +133,9 @@ class OrdenesApiTest {
 				.andExpect(jsonPath("$.monto").value(35000))
 				.andExpect(jsonPath("$.transiciones[0].desde").value("CREADA"))
 				.andExpect(jsonPath("$.transiciones[0].hacia").value("PENDIENTE_PAGO"))
-				.andExpect(jsonPath("$.transiciones[0].momento").isNotEmpty());
+				.andExpect(jsonPath("$.transiciones[0].momento").isNotEmpty())
+				// endpoint de polling (ADR-005): jamás servido desde caché
+				.andExpect(header().string("Cache-Control", "no-store"));
 	}
 
 	@Test
@@ -165,6 +167,8 @@ class OrdenesApiTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.estado").value("PENDIENTE_PAGO"))
 				.andExpect(jsonPath("$.monto").value(15000))
+				// endpoint de polling (ADR-005): jamás servido desde caché
+				.andExpect(header().string("Cache-Control", "no-store"))
 				.andReturn();
 
 		// contrato estricto: SOLO estado y monto, nada del comercio ni interno
