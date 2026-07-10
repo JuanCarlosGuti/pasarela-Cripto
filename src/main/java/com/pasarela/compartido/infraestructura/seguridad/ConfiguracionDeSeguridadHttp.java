@@ -50,6 +50,8 @@ public class ConfiguracionDeSeguridadHttp {
 						.requestMatchers(HttpMethod.POST, "/api/comercios").permitAll()
 						// página de pago del pagador: pública por diseño (HU-009)
 						.requestMatchers(HttpMethod.GET, "/api/pagos/*").permitAll()
+						// webhooks: la autenticidad la da la firma del proveedor (HU-010)
+						.requestMatchers(HttpMethod.POST, "/api/webhooks/*").permitAll()
 						// contrato OpenAPI para el frontend Angular (HU-009)
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")

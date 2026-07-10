@@ -33,7 +33,9 @@ class SimuladorCondicionalTest {
 
 	@Test
 	void conLaPropiedadHabilitada_elBeanExiste() {
-		contexto.withPropertyValues("pasarela.proveedores.simulado.habilitado=true")
+		contexto.withPropertyValues(
+						"pasarela.proveedores.simulado.habilitado=true",
+						"pasarela.proveedores.simulado.secreto-webhook=secreto-de-prueba")
 				.run(ctx -> assertThat(ctx).hasSingleBean(ProveedorDePagoSimulado.class));
 	}
 

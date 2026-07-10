@@ -1,10 +1,22 @@
 package com.pasarela.pagos.infraestructura.salida.proveedor;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.pagos.dominio.excepcion.ProveedorDePagoNoDisponibleException;
+import com.pasarela.pagos.dominio.excepcion.WebhookInvalidoException;
+import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 import com.pasarela.pagos.dominio.puerto.salida.ProveedorDePagoPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.HexFormat;
 
 /**
  * Proveedor simulado (T-006): adaptador de {@link ProveedorDePagoPort} para
@@ -35,12 +47,16 @@ public class ProveedorDePagoSimulado implements ProveedorDePagoPort {
 
 	private final ModoDeFallo modoDeFallo;
 	private final long milisegundosTimeout;
+	private final String secretoWebhook;
+	private final ObjectMapper json = new ObjectMapper();
 
 	public ProveedorDePagoSimulado(
 			@Value("${pasarela.proveedores.simulado.modo-fallo:NINGUNO}") ModoDeFallo modoDeFallo,
-			@Value("${pasarela.proveedores.simulado.milisegundos-timeout:200}") long milisegundosTimeout) {
+			@Value("${pasarela.proveedores.simulado.milisegundos-timeout:200}") long milisegundosTimeout,
+			@Value("${pasarela.proveedores.simulado.secreto-webhook}") String secretoWebhook) {
 		this.modoDeFallo = modoDeFallo;
 		this.milisegundosTimeout = milisegundosTimeout;
+		this.secretoWebhook = secretoWebhook;
 	}
 
 	@Override
@@ -67,6 +83,56 @@ public class ProveedorDePagoSimulado implements ProveedorDePagoPort {
 			Thread.sleep(milisegundosTimeout);
 		} catch (InterruptedException interrupcion) {
 			Thread.currentThread().interrupt();
+		}
+	}
+
+	/** HMAC-SHA256 del cuerpo con el secreto compartido, como hará Binance (HU-021). */
+	@Override
+	public boolean firmaValida(String cargaCruda, String firma) {
+		if (firma == null || firma.isBlank()) {
+			return false;
+		}
+		byte[] esperada = hmac(cargaCruda).getBytes(StandardCharsets.UTF_8);
+		byte[] recibida = firma.getBytes(StandardCharsets.UTF_8);
+		// comparación en tiempo constante: la firma no se filtra por timing
+		return MessageDigest.isEqual(esperada, recibida);
+	}
+
+	@Override
+	public WebhookDelProveedor interpretarWebhook(String cargaCruda) {
+		try {
+			JsonNode nodo = json.readTree(cargaCruda);
+			return new WebhookDelProveedor(
+					textoObligatorio(nodo, "idEvento"),
+					textoObligatorio(nodo, "tipo"),
+					new ReferenciaPago(textoObligatorio(nodo, "referencia")),
+					Dinero.cop(nodo.path("monto").asLong()),
+					Instant.parse(textoObligatorio(nodo, "pagadoEn")));
+		} catch (WebhookInvalidoException excepcion) {
+			throw excepcion;
+		} catch (Exception excepcion) {
+			throw new WebhookInvalidoException(
+					"El payload del webhook simulado está malformado", excepcion);
+		}
+	}
+
+	private static String textoObligatorio(JsonNode nodo, String campo) {
+		JsonNode valor = nodo.path(campo);
+		if (valor.isMissingNode() || valor.asText().isBlank()) {
+			throw new WebhookInvalidoException(
+					"El webhook simulado no trae el campo obligatorio '" + campo + "'");
+		}
+		return valor.asText();
+	}
+
+	private String hmac(String carga) {
+		try {
+			Mac mac = Mac.getInstance("HmacSHA256");
+			mac.init(new SecretKeySpec(
+					secretoWebhook.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+			return HexFormat.of().formatHex(mac.doFinal(carga.getBytes(StandardCharsets.UTF_8)));
+		} catch (Exception excepcion) {
+			throw new IllegalStateException("No fue posible calcular el HMAC", excepcion);
 		}
 	}
 
