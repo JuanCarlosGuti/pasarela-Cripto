@@ -251,7 +251,7 @@ la suya, por referencia pública) **para** saber en qué va cada cobro.
   → idempotencia → interpretar → confirmar → notificar) y hay un test que lo
   demuestra.
 
-### 🔵 HU-011 — Idempotencia estricta del webhook
+### ✅ HU-011 — Idempotencia estricta del webhook
 **Como** Plataforma **quiero** que procesar el mismo evento N veces produzca
 exactamente el mismo resultado que una vez **para** que el doble cobro sea
 **imposible** (ADR-004).
@@ -266,7 +266,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
   simultáneos contra PostgreSQL real vía Testcontainers) produce una sola
   confirmación — la constraint es la última línea de defensa y se ejercita de verdad.
 
-### ⬜ HU-012 — Caminos tristes del webhook
+### 🔵 HU-012 — Caminos tristes del webhook
 **Como** Plataforma **quiero** manejar explícitamente cada webhook anómalo
 **para** que ningún caso raro deje una orden inconsistente ni pase inadvertido.
 
