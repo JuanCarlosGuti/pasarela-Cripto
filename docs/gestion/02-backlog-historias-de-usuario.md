@@ -328,7 +328,7 @@ atascadas **para** converger al estado correcto aunque un webhook nunca llegue
 
 ## Épica E7 — Liquidación y conciliación *(Sprint 5 / Fase 7)*
 
-### 🔵 HU-016 — Registro de liquidación
+### ✅ HU-016 — Registro de liquidación
 **Como** Plataforma **quiero** registrar cada liquidación que el proveedor hace al
 comercio **para** que cada peso quede trazado (invariante #4 del producto).
 
@@ -340,7 +340,7 @@ comercio **para** que cada peso quede trazado (invariante #4 del producto).
 - `montoBruto = Σ órdenes` y `neto = bruto − comisión` cuadran **al centavo**
   (propiedad verificada en tests con montos que fuerzan redondeos).
 
-### ⬜ HU-017 — Conciliación contra el proveedor
+### 🔵 HU-017 — Conciliación contra el proveedor
 **Como** Admin **quiero** conciliar lo registrado contra lo reportado por el
 proveedor **para** detectar cualquier discrepancia de dinero de inmediato.
 
