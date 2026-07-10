@@ -2,7 +2,7 @@ package com.pasarela.pagos;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pasarela.TestcontainersConfiguration;
-import org.junit.jupiter.api.Disabled;
+import com.pasarela.pagos.dominio.puerto.salida.OrdenDePagoRepositorio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +47,9 @@ class WebhooksApiTest {
 
 	@Autowired
 	private JdbcTemplate jdbc;
+
+	@Autowired
+	private OrdenDePagoRepositorio ordenes;
 
 	@Value("${pasarela.seguridad.admin.email}")
 	private String adminEmail;
@@ -147,7 +150,6 @@ class WebhooksApiTest {
 	}
 
 	@Test
-	@Disabled("HU-012: monto distinto al esperado → revisión")
 	void montoDistinto_laOrdenVaARevision_yElAdminQuedaAlertado() throws Exception {
 		Orden orden = ordenPendiente("900373913-4", "monto@webhooks.co");
 		String cuerpo = cuerpoWebhook("evt-monto-1", orden.referencia(), 99999);
@@ -161,18 +163,62 @@ class WebhooksApiTest {
 		mvc.perform(get("/api/ordenes/" + orden.id())
 						.header("Authorization", "Bearer " + orden.token()))
 				.andExpect(jsonPath("$.estado").value("EN_REVISION"));
+		assertThat(jdbc.queryForObject(
+				"select count(*) from bitacora_operaciones where tipo = 'MONTO_DISTINTO'",
+				Integer.class)).isGreaterThanOrEqualTo(1);
 	}
 
 	@Test
-	@Disabled("HU-012: pago tardío sobre orden expirada → revisión manual, no confirmación")
-	void pagoTardio_sobreOrdenExpirada_noSeConfirma() throws Exception {
-		// requiere una orden EXPIRADA: llega con el job de HU-014 o manipulación de reloj
+	void pagoTardio_sobreOrdenExpirada_noSeConfirma_yQuedaParaRevision() throws Exception {
+		Orden orden = ordenPendiente("890905166-8", "tardio@webhooks.co");
+		expirarPorDebajoDeLaMesa(orden.id());
+		String cuerpo = cuerpoWebhook("evt-tardio-1", orden.referencia(), 40000);
+
+		mvc.perform(post("/api/webhooks/simulado")
+						.header("X-Firma", firmar(cuerpo))
+						.contentType(MediaType.APPLICATION_JSON).content(cuerpo))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.resultado").value("PARA_REVISION"));
+
+		// la orden sigue EXPIRADA: jamás se confirma un pago tardío
+		mvc.perform(get("/api/ordenes/" + orden.id())
+						.header("Authorization", "Bearer " + orden.token()))
+				.andExpect(jsonPath("$.estado").value("EXPIRADA"));
+		// el evento guarda todos los datos para gestionar el reembolso
+		assertThat(jdbc.queryForObject(
+				"select nota_revision from eventos_proveedor where id_externo_evento = 'evt-tardio-1'",
+				String.class)).isNotBlank();
+		assertThat(jdbc.queryForObject(
+				"select count(*) from bitacora_operaciones where tipo = 'PAGO_TARDIO'",
+				Integer.class)).isGreaterThanOrEqualTo(1);
 	}
 
 	@Test
-	@Disabled("HU-012: webhook fuera de orden → la máquina de estados lo tolera")
-	void webhookFueraDeOrden_noCorrompeNada() throws Exception {
-		// p. ej. evento de conversión antes que el de pago detectado
+	void webhookFueraDeOrden_noCorrompeNada_yElCorrectoAunConfirma() throws Exception {
+		Orden orden = ordenPendiente("811026252-4", "fuera@webhooks.co");
+		String convertidaAntes = cuerpoWebhook(
+				"evt-fuera-1", "PAGO_CONVERTIDO", orden.referencia(), 40000);
+
+		// llega la "conversión" antes que el pago: se tolera sin corromper
+		mvc.perform(post("/api/webhooks/simulado")
+						.header("X-Firma", firmar(convertidaAntes))
+						.contentType(MediaType.APPLICATION_JSON).content(convertidaAntes))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.resultado").value("PARA_REVISION"));
+		mvc.perform(get("/api/ordenes/" + orden.id())
+						.header("Authorization", "Bearer " + orden.token()))
+				.andExpect(jsonPath("$.estado").value("PENDIENTE_PAGO"));
+
+		// y el evento correcto que llega después confirma con normalidad
+		String pagoCorrecto = cuerpoWebhook("evt-fuera-2", orden.referencia(), 40000);
+		mvc.perform(post("/api/webhooks/simulado")
+						.header("X-Firma", firmar(pagoCorrecto))
+						.contentType(MediaType.APPLICATION_JSON).content(pagoCorrecto))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.resultado").value("CONFIRMADO"));
+		mvc.perform(get("/api/ordenes/" + orden.id())
+						.header("Authorization", "Bearer " + orden.token()))
+				.andExpect(jsonPath("$.estado").value("PAGO_DETECTADO"));
 	}
 
 	// --- ayudas ---
@@ -211,9 +257,22 @@ class WebhooksApiTest {
 	}
 
 	private String cuerpoWebhook(String idEvento, String referencia, long monto) {
+		return cuerpoWebhook(idEvento, "PAGO_RECIBIDO", referencia, monto);
+	}
+
+	private String cuerpoWebhook(String idEvento, String tipo, String referencia, long monto) {
 		return """
-				{"idEvento": "%s", "tipo": "PAGO_RECIBIDO", "referencia": "%s", "monto": %d, "pagadoEn": "2026-07-09T15:05:00Z"}
-				""".formatted(idEvento, referencia, monto).trim();
+				{"idEvento": "%s", "tipo": "%s", "referencia": "%s", "monto": %d, "pagadoEn": "2026-07-09T15:05:00Z"}
+				""".formatted(idEvento, tipo, referencia, monto).trim();
+	}
+
+	/** Deja la orden EXPIRADA como lo hará el job de HU-014: vía dominio + repositorio. */
+	private void expirarPorDebajoDeLaMesa(String ordenId) {
+		var orden = ordenes.buscarPorId(
+				com.pasarela.pagos.dominio.modelo.IdOrden.de(java.util.UUID.fromString(ordenId)))
+				.orElseThrow();
+		orden.expirar(orden.expiraEn().plusSeconds(60));
+		ordenes.guardar(orden);
 	}
 
 	private String firmar(String cuerpo) throws Exception {

@@ -19,7 +19,9 @@ public enum EstadoOrden {
 	public boolean puedeTransicionarA(EstadoOrden destino) {
 		return switch (this) {
 			case CREADA -> destino == PENDIENTE_PAGO;
-			case PENDIENTE_PAGO -> destino == PAGO_DETECTADO || destino == EXPIRADA;
+			// FALLIDA desde pendiente: pago inválido detectado, p. ej. monto errado (HU-012)
+			case PENDIENTE_PAGO -> destino == PAGO_DETECTADO || destino == EXPIRADA
+					|| destino == FALLIDA;
 			case PAGO_DETECTADO -> destino == CONVERTIDA || destino == FALLIDA;
 			case CONVERTIDA -> destino == LIQUIDADA;
 			case FALLIDA -> destino == EN_REVISION;

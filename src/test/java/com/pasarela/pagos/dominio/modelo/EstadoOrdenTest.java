@@ -23,9 +23,10 @@ class EstadoOrdenTest {
 	}
 
 	@Test
-	void desdePendientePago_soloPuedeIrAPagoDetectadoOExpirada() {
+	void desdePendientePago_puedeIrAPagoDetectadoExpiradaOFallida() {
+		// FALLIDA desde pendiente: pago inválido, p. ej. monto errado (HU-012)
 		assertThat(sucesoresDe(PENDIENTE_PAGO))
-				.containsExactlyInAnyOrder(PAGO_DETECTADO, EXPIRADA);
+				.containsExactlyInAnyOrder(PAGO_DETECTADO, EXPIRADA, FALLIDA);
 	}
 
 	@Test

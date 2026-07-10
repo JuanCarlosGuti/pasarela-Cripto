@@ -176,6 +176,69 @@ class ProcesarWebhookServiceTest {
 	}
 
 	@Test
+	void montoDistintoAlEsperado_llevaLaOrdenARevision_yAlertaEnBitacora() {
+		WebhookDelProveedor montoErrado = new WebhookDelProveedor("evt-1", "PAGO_RECIBIDO",
+				orden.referencia(), Dinero.cop(99999), AHORA.minusSeconds(5));
+		when(proveedor.firmaValida(any(), any())).thenReturn(true);
+		when(proveedor.interpretarWebhook(CARGA)).thenReturn(montoErrado);
+		when(eventos.existe(any(), any())).thenReturn(false);
+		when(eventos.guardar(any())).thenAnswer(returnsFirstArg());
+		when(ordenes.buscarPorReferencia(any())).thenReturn(Optional.of(orden));
+		when(ordenes.guardar(any())).thenAnswer(returnsFirstArg());
+
+		ResultadoWebhook resultado = servicio.procesar(COMANDO);
+
+		assertThat(resultado).isEqualTo(ResultadoWebhook.PARA_REVISION);
+		assertThat(orden.estado()).isEqualTo(EstadoOrden.EN_REVISION);
+		// el motivo queda auditado en el historial: PENDIENTE→FALLIDA con monto
+		assertThat(orden.historial().getLast().desde()).isEqualTo(EstadoOrden.FALLIDA);
+		assertThat(orden.historial().get(orden.historial().size() - 2).motivo())
+				.contains("99999").contains("40000");
+		verify(ordenes).guardar(orden);
+		verify(bitacora).registrar(any());
+		verifyNoInteractions(notificador);
+	}
+
+	@Test
+	void pagoTardio_sobreOrdenYaExpirada_noConfirma_yQuedaParaRevision() {
+		OrdenDePago expirada = OrdenDePago.crear(IdComercio.generar(), Dinero.cop(40000),
+				webhook.referencia(), AHORA.minusSeconds(1200), AHORA.minusSeconds(300));
+		expirada.registrarCobroEnProveedor(AHORA.minusSeconds(1200));
+		expirada.expirar(AHORA);
+		when(proveedor.firmaValida(any(), any())).thenReturn(true);
+		when(proveedor.interpretarWebhook(CARGA)).thenReturn(webhook);
+		when(eventos.existe(any(), any())).thenReturn(false);
+		when(eventos.guardar(any())).thenAnswer(returnsFirstArg());
+		when(ordenes.buscarPorReferencia(any())).thenReturn(Optional.of(expirada));
+
+		ResultadoWebhook resultado = servicio.procesar(COMANDO);
+
+		assertThat(resultado).isEqualTo(ResultadoWebhook.PARA_REVISION);
+		assertThat(expirada.estado()).isEqualTo(EstadoOrden.EXPIRADA); // intacta
+		verify(ordenes, never()).guardar(any());
+		verify(bitacora).registrar(any());
+		verifyNoInteractions(notificador);
+	}
+
+	@Test
+	void tipoDeEventoNoSoportado_oFueraDeOrden_quedaParaRevision_sinCorromperNada() {
+		WebhookDelProveedor fueraDeOrden = new WebhookDelProveedor("evt-1", "PAGO_CONVERTIDO",
+				orden.referencia(), Dinero.cop(40000), AHORA.minusSeconds(5));
+		when(proveedor.firmaValida(any(), any())).thenReturn(true);
+		when(proveedor.interpretarWebhook(CARGA)).thenReturn(fueraDeOrden);
+		when(eventos.existe(any(), any())).thenReturn(false);
+		when(eventos.guardar(any())).thenAnswer(returnsFirstArg());
+		when(ordenes.buscarPorReferencia(any())).thenReturn(Optional.of(orden));
+
+		ResultadoWebhook resultado = servicio.procesar(COMANDO);
+
+		assertThat(resultado).isEqualTo(ResultadoWebhook.PARA_REVISION);
+		assertThat(orden.estado()).isEqualTo(EstadoOrden.PENDIENTE_PAGO); // intacta
+		verify(ordenes, never()).guardar(any());
+		verifyNoInteractions(notificador);
+	}
+
+	@Test
 	void siLaNotificacionFalla_laConfirmacionNoSeRevierte() {
 		// HU-013: la notificación es best-effort; la fuente de verdad es el estado
 		when(proveedor.firmaValida(any(), any())).thenReturn(true);
