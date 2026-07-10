@@ -238,7 +238,7 @@ la suya, por referencia pública) **para** saber en qué va cada cobro.
 
 ## Épica E5 — Webhook e idempotencia *(Sprint 4 / Fase 5 — LA CRÍTICA)*
 
-### 🔵 HU-010 — Confirmación de pago por webhook
+### ✅ HU-010 — Confirmación de pago por webhook
 **Como** Sistema **quiero** procesar la notificación de pago del proveedor
 **para** que el comercio vea "PAGADO ✓" en segundos.
 
@@ -251,7 +251,7 @@ la suya, por referencia pública) **para** saber en qué va cada cobro.
   → idempotencia → interpretar → confirmar → notificar) y hay un test que lo
   demuestra.
 
-### ⬜ HU-011 — Idempotencia estricta del webhook
+### 🔵 HU-011 — Idempotencia estricta del webhook
 **Como** Plataforma **quiero** que procesar el mismo evento N veces produzca
 exactamente el mismo resultado que una vez **para** que el doble cobro sea
 **imposible** (ADR-004).
