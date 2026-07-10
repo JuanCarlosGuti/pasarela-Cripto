@@ -2,7 +2,7 @@ package com.pasarela.pagos.dominio.puerto.salida;
 
 import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
-import com.pasarela.pagos.dominio.modelo.IdOrden;
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 
@@ -31,6 +31,13 @@ public interface OrdenDePagoRepositorio {
 	 * {@code OrdenDePago.estaExpirada}.
 	 */
 	List<OrdenDePago> buscarPendientesExpiradas(Instant ahora, int limite);
+
+	/**
+	 * Órdenes PENDIENTE_PAGO creadas antes del instante dado — las
+	 * "atascadas" que la reconciliación consulta activamente al proveedor
+	 * (HU-015), como máximo {@code limite} por ciclo.
+	 */
+	List<OrdenDePago> buscarPendientesCreadasAntesDe(Instant limite, int maximo);
 
 	/**
 	 * Suma de las órdenes del comercio creadas en [desde, hasta) que

@@ -57,6 +57,8 @@ public class ConfiguracionDeSeguridadHttp {
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/comercios/*/limites").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/ordenes").hasRole("COMERCIO")
+						.requestMatchers(HttpMethod.POST, "/api/liquidaciones").hasRole("ADMIN")
+						.requestMatchers("/api/liquidaciones/*/conciliacion").hasRole("ADMIN")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 						jwt.jwtAuthenticationConverter(convertidorDeRoles())));

@@ -4,7 +4,7 @@ import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.compartido.dominio.modelo.Moneda;
 import com.pasarela.pagos.dominio.modelo.EstadoOrden;
-import com.pasarela.pagos.dominio.modelo.IdOrden;
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 import com.pasarela.pagos.dominio.puerto.salida.OrdenDePagoRepositorio;
@@ -58,6 +58,16 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 		return jpa.findByEstadoAndExpiraEnBefore(
 						EstadoOrden.PENDIENTE_PAGO.name(), ahora,
 						PageRequest.of(0, limite, Sort.by("expiraEn")))
+				.stream()
+				.map(mapper::aDominio)
+				.toList();
+	}
+
+	@Override
+	public List<OrdenDePago> buscarPendientesCreadasAntesDe(Instant limite, int maximo) {
+		return jpa.findByEstadoAndCreadaEnBefore(
+						EstadoOrden.PENDIENTE_PAGO.name(), limite,
+						PageRequest.of(0, maximo, Sort.by("creadaEn")))
 				.stream()
 				.map(mapper::aDominio)
 				.toList();

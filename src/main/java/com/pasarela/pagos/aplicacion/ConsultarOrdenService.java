@@ -1,7 +1,7 @@
 package com.pasarela.pagos.aplicacion;
 
 import com.pasarela.pagos.dominio.excepcion.OrdenNoEncontradaException;
-import com.pasarela.pagos.dominio.modelo.IdOrden;
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.puerto.entrada.ConsultarOrdenUseCase;
 import com.pasarela.pagos.dominio.puerto.salida.OrdenDePagoRepositorio;

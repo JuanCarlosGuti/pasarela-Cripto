@@ -6,6 +6,7 @@ import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 import com.pasarela.pagos.dominio.puerto.salida.ProveedorDePagoPort.CobroCreado;
 import com.pasarela.pagos.dominio.puerto.salida.ProveedorDePagoPort.SolicitudDeCobro;
 import com.pasarela.pagos.infraestructura.salida.proveedor.ProveedorDePagoSimulado.ModoDeFallo;
+import com.pasarela.pagos.infraestructura.salida.proveedor.ProveedorDePagoSimulado.ResultadoDeConsulta;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -24,7 +25,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void enModoNormal_generaUnQrDeterministaConReferenciaYMonto() {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 
 		CobroCreado cobro = simulador.crearCobro(SOLICITUD);
 
@@ -36,7 +37,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void enModoError_fallaInmediatamente_comoUn500DelProveedor() {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.ERROR, 200, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.ERROR, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 
 		assertThatThrownBy(() -> simulador.crearCobro(SOLICITUD))
 				.isInstanceOf(ProveedorDePagoNoDisponibleException.class)
@@ -45,7 +46,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void laFirma_esUnHmacSha256DelCuerpoConElSecretoCompartido() throws Exception {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 		String cuerpo = "{\"idEvento\":\"evt-1\"}";
 		javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
 		mac.init(new javax.crypto.spec.SecretKeySpec(
@@ -61,7 +62,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void interpretarWebhook_traduceElPayloadAlLenguajeDelDominio() {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 		String cuerpo = """
 				{"idEvento": "evt-9", "tipo": "PAGO_RECIBIDO", "referencia": "ref-9", "monto": 40000, "pagadoEn": "2026-07-09T15:05:00Z"}
 				""";
@@ -77,7 +78,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void interpretarWebhook_conPayloadMalformadoOIncompleto_lanzaExcepcion() {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 
 		assertThatThrownBy(() -> simulador.interpretarWebhook("esto no es json"))
 				.isInstanceOf(com.pasarela.pagos.dominio.excepcion.WebhookInvalidoException.class);
@@ -88,7 +89,7 @@ class ProveedorDePagoSimuladoTest {
 
 	@Test
 	void enModoTimeout_esperaElTiempoConfigurado_yLuegoFalla() {
-		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.TIMEOUT, 150, SECRETO);
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(ModoDeFallo.TIMEOUT, 150, SECRETO, ResultadoDeConsulta.NO_PAGADO);
 
 		Instant antes = Instant.now();
 		assertThatThrownBy(() -> simulador.crearCobro(SOLICITUD))
@@ -97,6 +98,42 @@ class ProveedorDePagoSimuladoTest {
 
 		assertThat(Duration.between(antes, Instant.now()))
 				.isGreaterThanOrEqualTo(Duration.ofMillis(150));
+	}
+
+	@Test
+	void consultarCobro_enModoPagado_fabricaElEventoFirmado_conIdDeterminista() {
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(
+				ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.PAGADO);
+
+		var consulta = simulador.consultarCobro(new ReferenciaPago("ref-9"), Dinero.cop(40000));
+
+		assertThat(consulta).isPresent();
+		// el evento fabricado pasa por la MISMA validación de firma del webhook
+		assertThat(simulador.firmaValida(consulta.get().cargaCruda(), consulta.get().firma()))
+				.isTrue();
+		var webhook = simulador.interpretarWebhook(consulta.get().cargaCruda());
+		assertThat(webhook.idExternoEvento()).isEqualTo("evt-recon-ref-9"); // determinista
+		assertThat(webhook.referencia()).isEqualTo(new ReferenciaPago("ref-9"));
+		assertThat(webhook.monto()).isEqualTo(Dinero.cop(40000));
+	}
+
+	@Test
+	void consultarCobro_enModoNoPagado_devuelveVacio() {
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(
+				ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.NO_PAGADO);
+
+		assertThat(simulador.consultarCobro(new ReferenciaPago("ref-9"), Dinero.cop(40000)))
+				.isEmpty();
+	}
+
+	@Test
+	void consultarCobro_enModoError_fallaComoProveedorCaido() {
+		ProveedorDePagoSimulado simulador = new ProveedorDePagoSimulado(
+				ModoDeFallo.NINGUNO, 200, SECRETO, ResultadoDeConsulta.ERROR);
+
+		assertThatThrownBy(() -> simulador.consultarCobro(
+				new ReferenciaPago("ref-9"), Dinero.cop(40000)))
+				.isInstanceOf(ProveedorDePagoNoDisponibleException.class);
 	}
 
 }

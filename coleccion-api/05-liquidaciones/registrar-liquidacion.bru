@@ -1,0 +1,38 @@
+meta {
+  name: Registrar liquidación (admin)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/liquidaciones
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "comercioId": "{{comercioId}}",
+    "ordenes": ["{{ordenId}}"],
+    "referenciaProveedor": "liq-prov-001"
+  }
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-016 (Sprint 5). Solo rol ADMIN (COMERCIO → 403).
+
+  Registra que el proveedor liquidó COP al comercio por un grupo de
+  órdenes CONVERTIDA: calcula bruto (Σ órdenes), comisión (2.5% con
+  redondeo bancario) y neto (bruto − comisión, cuadra al centavo). Las
+  órdenes pasan a LIQUIDADA.
+
+  Nota: las órdenes deben estar CONVERTIDA. Esa transición llega con los
+  webhooks del proveedor real (Sprint 7); hoy solo ocurre en tests.
+
+  Caminos tristes: orden en otra liquidación → 409 (constraint en BD);
+  orden sin convertir o de otro comercio → 422; sin órdenes → 400.
+}
