@@ -10,32 +10,48 @@ post {
   auth: none
 }
 
-headers {
-  X-Firma: {{firmaWebhook}}
-}
-
 body:json {
   {
-    "idEvento": "evt-000001",
+    "idEvento": "se-genera-en-el-script",
     "tipo": "PAGO_RECIBIDO",
     "referencia": "{{referenciaPago}}",
     "monto": 40000,
-    "moneda": "USDT",
-    "timestamp": "2026-07-08T10:05:00Z"
+    "pagadoEn": "2026-07-10T04:30:00Z"
   }
 }
 
+script:pre-request {
+  const crypto = require('crypto');
+  const cuerpo = JSON.stringify({
+    idEvento: "evt-bruno-" + Date.now(),
+    tipo: "PAGO_RECIBIDO",
+    referencia: bru.getEnvVar("referenciaPago"),
+    monto: 40000,
+    pagadoEn: new Date().toISOString()
+  });
+  req.setBody(cuerpo);
+  const firma = crypto.createHmac('sha256', bru.getEnvVar("secretoWebhook"))
+    .update(cuerpo).digest('hex');
+  req.setHeader("X-Firma", firma);
+}
+
 docs {
-  ⏳ PLANEADO — disponible al cerrar el Sprint 4 (HU-010/011/012).
+  ✅ DISPONIBLE DESDE HU-010 (Sprint 4).
 
-  Simula la notificación de pago del proveedor. Flujo interno obligatorio:
-  firma → guardar evento crudo → idempotencia → interpretar → confirmar →
-  notificar. La orden pasa a PAGO_DETECTADO.
+  Simula la notificación de pago del proveedor. El script pre-request arma
+  el cuerpo con la {{referenciaPago}} de "Crear orden", genera un idEvento
+  único y FIRMA el cuerpo con HMAC-SHA256 y el {{secretoWebhook}} — igual
+  que lo hará Binance Pay.
 
-  Pruebas manuales interesantes desde aquí:
-  - Reenviar EXACTAMENTE el mismo cuerpo (mismo idEvento) → 200 pero sin
-    doble confirmación (idempotencia estricta, HU-011).
-  - X-Firma inválida → 401 y la orden no cambia.
-  - Cambiar "monto" → la orden pasa a EN_REVISION.
-  - Referencia inexistente → 200, evento guardado y marcado para revisión.
+  Flujo interno (orden exacto): firma → guardar evento crudo →
+  idempotencia → interpretar → confirmar → notificar. La orden pasa a
+  PAGO_DETECTADO (verifícalo con "Consulta pública por referencia").
+
+  Pruebas manuales interesantes:
+  - Para el DUPLICADO: fija un idEvento constante en el script y envía dos
+    veces → segunda respuesta {"resultado": "DUPLICADO"} sin doble efecto.
+  - Cambia el secretoWebhook del entorno → 401 y el intento queda en
+    eventos_proveedor con firma_valida=false.
+  - Referencia inexistente → 200 {"resultado": "PARA_REVISION"} y alerta
+    en la bitácora.
 }

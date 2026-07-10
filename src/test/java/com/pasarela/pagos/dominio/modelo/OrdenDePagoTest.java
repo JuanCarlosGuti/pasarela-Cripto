@@ -61,6 +61,8 @@ class OrdenDePagoTest {
 			new TransicionValida(EstadoOrden.CREADA, Accion.REGISTRAR_COBRO, EstadoOrden.PENDIENTE_PAGO),
 			new TransicionValida(EstadoOrden.PENDIENTE_PAGO, Accion.CONFIRMAR_PAGO, EstadoOrden.PAGO_DETECTADO),
 			new TransicionValida(EstadoOrden.PENDIENTE_PAGO, Accion.EXPIRAR, EstadoOrden.EXPIRADA),
+			// pago inválido detectado estando pendiente, p. ej. monto errado (HU-012)
+			new TransicionValida(EstadoOrden.PENDIENTE_PAGO, Accion.MARCAR_FALLIDA, EstadoOrden.FALLIDA),
 			new TransicionValida(EstadoOrden.PAGO_DETECTADO, Accion.MARCAR_CONVERTIDA, EstadoOrden.CONVERTIDA),
 			new TransicionValida(EstadoOrden.PAGO_DETECTADO, Accion.MARCAR_FALLIDA, EstadoOrden.FALLIDA),
 			new TransicionValida(EstadoOrden.CONVERTIDA, Accion.MARCAR_LIQUIDADA, EstadoOrden.LIQUIDADA),

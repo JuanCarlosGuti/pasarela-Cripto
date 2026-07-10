@@ -1,9 +1,11 @@
 package com.pasarela.pagos.infraestructura.entrada.rest;
 
 import com.pasarela.compartido.dominio.excepcion.MontoInvalidoException;
+import com.pasarela.pagos.dominio.excepcion.FirmaDeWebhookInvalidaException;
 import com.pasarela.pagos.dominio.excepcion.OrdenInvalidaException;
 import com.pasarela.pagos.dominio.excepcion.OrdenNoEncontradaException;
 import com.pasarela.pagos.dominio.excepcion.ProveedorDePagoNoDisponibleException;
+import com.pasarela.pagos.dominio.excepcion.WebhookInvalidoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,9 +18,16 @@ public class ManejadorDeErroresPagos {
 	public record ErrorResponse(String mensaje) {
 	}
 
-	@ExceptionHandler({OrdenInvalidaException.class, MontoInvalidoException.class})
+	@ExceptionHandler({OrdenInvalidaException.class, MontoInvalidoException.class,
+			WebhookInvalidoException.class})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ErrorResponse datosInvalidos(RuntimeException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	@ExceptionHandler(FirmaDeWebhookInvalidaException.class)
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public ErrorResponse firmaInvalida(FirmaDeWebhookInvalidaException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 

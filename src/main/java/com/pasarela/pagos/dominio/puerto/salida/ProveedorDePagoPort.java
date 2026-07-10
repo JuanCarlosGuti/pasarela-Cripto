@@ -25,10 +25,25 @@ public interface ProveedorDePagoPort {
 	 */
 	CobroCreado crearCobro(SolicitudDeCobro solicitud);
 
+	/** ¿La firma corresponde al proveedor? Primera puerta del webhook (HU-010). */
+	boolean firmaValida(String cargaCruda, String firma);
+
+	/**
+	 * Traduce el payload del proveedor al lenguaje del dominio.
+	 *
+	 * @throws com.pasarela.pagos.dominio.excepcion.WebhookInvalidoException
+	 *         si el payload está malformado o incompleto.
+	 */
+	WebhookDelProveedor interpretarWebhook(String cargaCruda);
+
 	record SolicitudDeCobro(ReferenciaPago referencia, Dinero monto, Instant expiraEn) {
 	}
 
 	record CobroCreado(String contenidoQr, String deeplink) {
+	}
+
+	record WebhookDelProveedor(String idExternoEvento, String tipo,
+			ReferenciaPago referencia, Dinero monto, Instant pagadoEn) {
 	}
 
 }
