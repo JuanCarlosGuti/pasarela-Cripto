@@ -354,7 +354,7 @@ proveedor **para** detectar cualquier discrepancia de dinero de inmediato.
 
 ## Épica E8 — Dashboard del comercio *(Sprint 6 / Fase 8)*
 
-### ⬜ HU-018 — Ventas del día y del mes
+### 🔵 HU-018 — Ventas del día y del mes
 **Como** Comercio **quiero** ver mis ventas del día y del mes **para** controlar mi
 negocio sin pedirle nada a nadie.
 
