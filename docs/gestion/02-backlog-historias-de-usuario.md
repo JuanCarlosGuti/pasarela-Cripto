@@ -297,7 +297,7 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
 
 ## Épica E6 — Convergencia: jobs de respaldo *(Sprint 5 / Fase 6)*
 
-### 🔵 HU-014 — Expiración automática de órdenes
+### ✅ HU-014 — Expiración automática de órdenes
 **Como** Sistema **quiero** expirar las órdenes vencidas sin pago **para** que no
 queden cobros zombis pendientes para siempre.
 
@@ -310,7 +310,7 @@ queden cobros zombis pendientes para siempre.
   expiración vs. confirmación), **entonces** solo una de las dos transiciones gana y
   la otra se rechaza limpiamente — probado con Testcontainers.
 
-### ⬜ HU-015 — Reconciliación de órdenes atascadas
+### 🔵 HU-015 — Reconciliación de órdenes atascadas
 **Como** Plataforma **quiero** consultar activamente al proveedor por órdenes
 atascadas **para** converger al estado correcto aunque un webhook nunca llegue
 (ADR-004).
