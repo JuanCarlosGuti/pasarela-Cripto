@@ -1,5 +1,6 @@
 package com.pasarela.pagos.dominio.modelo;
 
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.pagos.dominio.excepcion.OrdenInvalidaException;

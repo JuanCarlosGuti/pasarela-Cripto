@@ -1,5 +1,6 @@
 package com.pasarela.pagos;
 
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pasarela.TestcontainersConfiguration;
 import com.pasarela.pagos.dominio.puerto.salida.OrdenDePagoRepositorio;
@@ -269,7 +270,7 @@ class WebhooksApiTest {
 	/** Deja la orden EXPIRADA como lo hará el job de HU-014: vía dominio + repositorio. */
 	private void expirarPorDebajoDeLaMesa(String ordenId) {
 		var orden = ordenes.buscarPorId(
-				com.pasarela.pagos.dominio.modelo.IdOrden.de(java.util.UUID.fromString(ordenId)))
+				com.pasarela.compartido.dominio.modelo.IdOrden.de(java.util.UUID.fromString(ordenId)))
 				.orElseThrow();
 		orden.expirar(orden.expiraEn().plusSeconds(60));
 		ordenes.guardar(orden);
