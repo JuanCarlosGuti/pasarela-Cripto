@@ -1,4 +1,4 @@
-package com.pasarela.pagos.dominio.modelo;
+package com.pasarela.compartido.dominio.modelo;
 
 import com.pasarela.compartido.dominio.excepcion.IdentificadorInvalidoException;
 import org.junit.jupiter.api.Test;

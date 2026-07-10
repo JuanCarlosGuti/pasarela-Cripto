@@ -2,7 +2,7 @@ package com.pasarela.pagos.dominio.puerto.salida;
 
 import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
-import com.pasarela.pagos.dominio.modelo.IdOrden;
+import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 
