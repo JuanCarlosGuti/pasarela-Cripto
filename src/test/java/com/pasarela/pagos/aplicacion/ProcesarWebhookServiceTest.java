@@ -239,6 +239,52 @@ class ProcesarWebhookServiceTest {
 	}
 
 	@Test
+	void siLaExpiracionGanaLaCarrera_elWebhookRecarga_yTerminaEnPagoTardio() {
+		// el guardado pierde contra el job de expiración (HU-014): se recarga
+		// la orden y se decide de nuevo por el camino normal → PAGO_TARDIO
+		OrdenDePago expirada = OrdenDePago.crear(IdComercio.generar(), Dinero.cop(40000),
+				webhook.referencia(), AHORA.minusSeconds(1200), AHORA.minusSeconds(300));
+		expirada.registrarCobroEnProveedor(AHORA.minusSeconds(1200));
+		expirada.expirar(AHORA);
+		when(proveedor.firmaValida(any(), any())).thenReturn(true);
+		when(proveedor.interpretarWebhook(CARGA)).thenReturn(webhook);
+		when(eventos.existe(any(), any())).thenReturn(false);
+		when(eventos.guardar(any())).thenAnswer(returnsFirstArg());
+		when(ordenes.buscarPorReferencia(any()))
+				.thenReturn(Optional.of(orden))      // primera lectura: aún pendiente
+				.thenReturn(Optional.of(expirada));  // recarga tras la carrera
+		when(ordenes.guardar(orden))
+				.thenThrow(new org.springframework.dao.OptimisticLockingFailureException(
+						"la expiración ganó"));
+
+		ResultadoWebhook resultado = servicio.procesar(COMANDO);
+
+		assertThat(resultado).isEqualTo(ResultadoWebhook.PARA_REVISION);
+		verify(ordenes, times(2)).buscarPorReferencia(webhook.referencia());
+		verify(bitacora).registrar(any());
+		verifyNoInteractions(notificador);
+	}
+
+	@Test
+	void siLaOrdenDesapareceDuranteLaCarrera_falla_ruidosamente() {
+		// jamás debería pasar (las órdenes no se borran); si pasa, mejor un
+		// error ruidoso que un estado silenciosamente inconsistente
+		when(proveedor.firmaValida(any(), any())).thenReturn(true);
+		when(proveedor.interpretarWebhook(CARGA)).thenReturn(webhook);
+		when(eventos.existe(any(), any())).thenReturn(false);
+		when(eventos.guardar(any())).thenAnswer(returnsFirstArg());
+		when(ordenes.buscarPorReferencia(any()))
+				.thenReturn(Optional.of(orden))
+				.thenReturn(Optional.empty());
+		when(ordenes.guardar(orden))
+				.thenThrow(new org.springframework.dao.OptimisticLockingFailureException("carrera"));
+
+		assertThatThrownBy(() -> servicio.procesar(COMANDO))
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("desapareció");
+	}
+
+	@Test
 	void siLaNotificacionFalla_laConfirmacionNoSeRevierte() {
 		// HU-013: la notificación es best-effort; la fuente de verdad es el estado
 		when(proveedor.firmaValida(any(), any())).thenReturn(true);

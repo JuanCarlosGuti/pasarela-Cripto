@@ -36,6 +36,12 @@ public class OrdenDePago {
 	private final Instant expiraEn;
 	private EstadoOrden estado;
 	private final List<TransicionEstado> historial = new ArrayList<>();
+	/**
+	 * Marca opaca de concurrencia optimista: el dominio no la interpreta ni
+	 * la modifica; la persistencia la usa para detectar la carrera
+	 * expiración-vs-pago (HU-014). Null en órdenes aún no persistidas.
+	 */
+	private Long version;
 
 	private OrdenDePago(IdOrden id, IdComercio comercioId, Dinero monto,
 			ReferenciaPago referencia, Instant creadaEn, Instant expiraEn) {
@@ -73,7 +79,7 @@ public class OrdenDePago {
 	 */
 	public static OrdenDePago reconstituir(IdOrden id, IdComercio comercioId, Dinero monto,
 			ReferenciaPago referencia, Instant creadaEn, Instant expiraEn,
-			EstadoOrden estado, List<TransicionEstado> historial) {
+			EstadoOrden estado, List<TransicionEstado> historial, Long version) {
 		validarObligatorio(id, "el id");
 		validarObligatorio(comercioId, "el comercio");
 		validarObligatorio(monto, "el monto");
@@ -85,6 +91,7 @@ public class OrdenDePago {
 		OrdenDePago orden = new OrdenDePago(id, comercioId, monto, referencia, creadaEn, expiraEn);
 		orden.estado = estado;
 		orden.historial.addAll(historial);
+		orden.version = version;
 		return orden;
 	}
 
@@ -204,6 +211,11 @@ public class OrdenDePago {
 	/** Copia inmutable: el historial solo crece por transiciones de la propia orden. */
 	public List<TransicionEstado> historial() {
 		return List.copyOf(historial);
+	}
+
+	/** Marca opaca de concurrencia optimista; null si la orden no viene de BD. */
+	public Long version() {
+		return version;
 	}
 
 	@Override

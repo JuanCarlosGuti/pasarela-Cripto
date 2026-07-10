@@ -25,10 +25,12 @@ public interface OrdenDePagoRepositorio {
 
 	/**
 	 * Órdenes PENDIENTE_PAGO cuya ventana ya venció en el instante dado
-	 * (insumo del job de expiración, HU-014). El límite exacto NO cuenta
-	 * como vencida — mismo criterio que {@code OrdenDePago.estaExpirada}.
+	 * (insumo del job de expiración, HU-014), como máximo {@code limite}
+	 * por llamada: el job procesa por lotes, jamás toda la tabla. El límite
+	 * exacto NO cuenta como vencida — mismo criterio que
+	 * {@code OrdenDePago.estaExpirada}.
 	 */
-	List<OrdenDePago> buscarPendientesExpiradas(Instant ahora);
+	List<OrdenDePago> buscarPendientesExpiradas(Instant ahora, int limite);
 
 	/**
 	 * Suma de las órdenes del comercio creadas en [desde, hasta) que
