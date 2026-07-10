@@ -16,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,10 +31,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Integración del adaptador JPA contra PostgreSQL real (Testcontainers):
  * ida y vuelta dominio↔BD sin pérdidas, búsquedas con falsos positivos y la
  * restricción de unicidad de la referencia verificada a nivel SQL (T-005).
+ *
+ * <p>Corre SIN transacción envolvente (NOT_SUPPORTED): el adaptador escribe
+ * en transacción propia (REQUIRES_NEW, HU-014) y una transacción de test
+ * releería su propio caché en vez de la BD. Cada test usa datos propios
+ * (ids/referencias únicas) y las aserciones son por id, no por conteo
+ * global.</p>
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({TestcontainersConfiguration.class, OrdenJpaMapper.class, OrdenDePagoRepositorioJpa.class})
+@Transactional(propagation = Propagation.NOT_SUPPORTED)
 class OrdenDePagoRepositorioJpaTest {
 
 	private static final Instant CREADA_EN = Instant.parse("2026-07-08T10:00:00Z");
@@ -152,10 +161,13 @@ class OrdenDePagoRepositorioJpaTest {
 			repositorio.guardar(yaExpirada);
 			repositorio.guardar(pagadaVencida);
 
-			List<OrdenDePago> expiradas = repositorio.buscarPendientesExpiradas(DESPUES_DE_EXPIRAR);
+			List<OrdenDePago> expiradas = repositorio.buscarPendientesExpiradas(DESPUES_DE_EXPIRAR, 1000);
 
+			// por id (no por conteo): el test es inmune a datos de otros tests
 			assertThat(expiradas).extracting(OrdenDePago::id)
-					.containsExactly(pendienteVencida.id());
+					.contains(pendienteVencida.id())
+					.doesNotContain(pendienteVigente.id(), creadaVencida.id(),
+							yaExpirada.id(), pagadaVencida.id());
 		}
 
 		@Test
@@ -165,8 +177,10 @@ class OrdenDePagoRepositorioJpaTest {
 			pendiente.registrarCobroEnProveedor(CREADA_EN);
 			repositorio.guardar(pendiente);
 
-			assertThat(repositorio.buscarPendientesExpiradas(EXPIRA_EN)).isEmpty();
-			assertThat(repositorio.buscarPendientesExpiradas(DESPUES_DE_EXPIRAR)).hasSize(1);
+			assertThat(repositorio.buscarPendientesExpiradas(EXPIRA_EN, 1000))
+					.extracting(OrdenDePago::id).doesNotContain(pendiente.id());
+			assertThat(repositorio.buscarPendientesExpiradas(DESPUES_DE_EXPIRAR, 1000))
+					.extracting(OrdenDePago::id).contains(pendiente.id());
 		}
 	}
 

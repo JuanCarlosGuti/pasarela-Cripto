@@ -8,7 +8,11 @@ import com.pasarela.pagos.dominio.modelo.IdOrden;
 import com.pasarela.pagos.dominio.modelo.OrdenDePago;
 import com.pasarela.pagos.dominio.modelo.ReferenciaPago;
 import com.pasarela.pagos.dominio.puerto.salida.OrdenDePagoRepositorio;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,10 +30,16 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 		this.mapper = mapper;
 	}
 
+	/**
+	 * Transacción PROPIA (REQUIRES_NEW): si la escritura pierde la carrera
+	 * optimista (expiración vs. pago, HU-014), la excepción no envenena la
+	 * transacción del llamador, que puede recargar la orden y decidir de
+	 * nuevo. saveAndFlush: las violaciones (referencia duplicada, versión
+	 * vieja) estallan aquí, no en un flush diferido lejos del culpable.
+	 */
 	@Override
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public OrdenDePago guardar(OrdenDePago orden) {
-		// saveAndFlush: las violaciones de constraint (referencia duplicada)
-		// estallan aquí, no en un flush diferido lejos del culpable
 		return mapper.aDominio(jpa.saveAndFlush(mapper.aEntidad(orden)));
 	}
 
@@ -44,8 +54,10 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 	}
 
 	@Override
-	public List<OrdenDePago> buscarPendientesExpiradas(Instant ahora) {
-		return jpa.findByEstadoAndExpiraEnBefore(EstadoOrden.PENDIENTE_PAGO.name(), ahora)
+	public List<OrdenDePago> buscarPendientesExpiradas(Instant ahora, int limite) {
+		return jpa.findByEstadoAndExpiraEnBefore(
+						EstadoOrden.PENDIENTE_PAGO.name(), ahora,
+						PageRequest.of(0, limite, Sort.by("expiraEn")))
 				.stream()
 				.map(mapper::aDominio)
 				.toList();

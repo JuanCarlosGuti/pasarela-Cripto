@@ -15,7 +15,8 @@ interface OrdenJpaRepository extends JpaRepository<OrdenJpaEntity, UUID> {
 
 	Optional<OrdenJpaEntity> findByReferencia(String referencia);
 
-	List<OrdenJpaEntity> findByEstadoAndExpiraEnBefore(String estado, Instant limite);
+	List<OrdenJpaEntity> findByEstadoAndExpiraEnBefore(String estado, Instant limite,
+			org.springframework.data.domain.Pageable paginacion);
 
 	@Query("""
 			select coalesce(sum(o.monto), 0)

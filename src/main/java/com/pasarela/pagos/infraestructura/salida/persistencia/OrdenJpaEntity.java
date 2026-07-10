@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -54,13 +55,18 @@ public class OrdenJpaEntity {
 	@OrderColumn(name = "indice")
 	private List<TransicionEstadoEmbeddable> transiciones = new ArrayList<>();
 
+	/** Bloqueo optimista (HU-014): resuelve la carrera expiración-vs-pago. */
+	@Version
+	@Column(nullable = false)
+	private Long version;
+
 	protected OrdenJpaEntity() {
 		// requerido por JPA
 	}
 
 	OrdenJpaEntity(UUID id, UUID comercioId, BigDecimal monto, String moneda,
 			String referencia, String estado, Instant creadaEn, Instant expiraEn,
-			List<TransicionEstadoEmbeddable> transiciones) {
+			List<TransicionEstadoEmbeddable> transiciones, Long version) {
 		this.id = id;
 		this.comercioId = comercioId;
 		this.monto = monto;
@@ -70,6 +76,7 @@ public class OrdenJpaEntity {
 		this.creadaEn = creadaEn;
 		this.expiraEn = expiraEn;
 		this.transiciones = transiciones;
+		this.version = version;
 	}
 
 	UUID id() {
@@ -106,6 +113,10 @@ public class OrdenJpaEntity {
 
 	List<TransicionEstadoEmbeddable> transiciones() {
 		return transiciones;
+	}
+
+	Long version() {
+		return version;
 	}
 
 }

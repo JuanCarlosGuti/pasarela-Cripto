@@ -30,7 +30,8 @@ public class OrdenJpaMapper {
 								transicion.hacia().name(),
 								transicion.momento(),
 								transicion.motivo()))
-						.toList());
+						.toList(),
+				orden.version());
 	}
 
 	OrdenDePago aDominio(OrdenJpaEntity entidad) {
@@ -48,7 +49,8 @@ public class OrdenJpaMapper {
 								EstadoOrden.valueOf(transicion.hacia()),
 								transicion.momento(),
 								transicion.motivo()))
-						.toList());
+						.toList(),
+				entidad.version());
 	}
 
 }
