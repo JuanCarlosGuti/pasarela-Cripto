@@ -287,9 +287,9 @@ exactamente el mismo resultado que una vez **para** que el doble cobro sea
 **para** entregar el producto con confianza.
 
 **Criterios de aceptación:**
-- **Dado** una orden que pasa a `PAGO_DETECTADO`, **entonces** el `NotificadorPort`
-  emite el evento que el frontend consume (SSE o polling corto — decisión T: registrar
-  en ADR si es SSE).
+- **Dado** una orden que pasa a `PAGO_DETECTADO`, **entonces** el `NotificadorDeComercios`
+  registra el evento (best-effort); el frontend se entera por **polling corto**
+  (decisión tomada y registrada en [ADR-005](../adr/ADR-005-notificacion-por-polling.md)).
 - Si la notificación falla, la confirmación de la orden **no** se revierte (la
   notificación es best-effort; la fuente de verdad es el estado).
 
@@ -354,7 +354,7 @@ proveedor **para** detectar cualquier discrepancia de dinero de inmediato.
 
 ## Épica E8 — Dashboard del comercio *(Sprint 6 / Fase 8)*
 
-### 🔵 HU-018 — Ventas del día y del mes
+### ✅ HU-018 — Ventas del día y del mes
 **Como** Comercio **quiero** ver mis ventas del día y del mes **para** controlar mi
 negocio sin pedirle nada a nadie.
 
@@ -364,7 +364,7 @@ negocio sin pedirle nada a nadie.
 - Los totales solo cuentan órdenes efectivamente pagadas/liquidadas (definición
   exacta documentada en el endpoint).
 
-### ⬜ HU-019 — Exportar movimientos (contador-ready)
+### 🔵 HU-019 — Exportar movimientos (contador-ready)
 **Como** Comercio **quiero** exportar mi historial a CSV/Excel **para** entregárselo
 a mi contador tal cual.
 

@@ -24,7 +24,7 @@
 | **ArchUnit** | Las fronteras hexagonales como test | Libre | Sprint 0 |
 | **SonarCloud** | Análisis de calidad continuo. *Gratis solo para repos públicos*; para repo privado usar **SonarQube Community** en Docker local | Gratis | Sprint 1 |
 | **Spotless + google-java-format** | Formateo automático en el build (cero discusiones de estilo) | Libre | Sprint 0 |
-| **PIT (pitest)** | **Mutation testing**: mide si tus tests detectan bugs de verdad, no solo si ejecutan líneas. Clave para "tests muy reales" | Libre | Sprint 1 (dominio) |
+| **PIT (pitest)** | **Mutation testing**: mide si tus tests detectan bugs de verdad, no solo si ejecutan líneas. Clave para "tests muy reales" | Libre | Sprint 1 (dominio) y Sprint 4 (además, `ProcesarWebhookService` explícito) |
 
 ## Pruebas
 

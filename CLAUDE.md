@@ -195,16 +195,19 @@ Ante cualquier duda de diseño, **consulta primero estos documentos** antes de a
 - [x] Documentación técnica y de negocio completa en `docs/`
 - [x] **Fase 0:** pom.xml completo, estructura hexagonal de paquetes, compose.yaml
       (PostgreSQL), Flyway, ArchUnit, healthcheck, CI (Sprint 0 cerrado: `v0.0.1`)
-- [ ] **Fase 1:** dominio de `OrdenDePago` (VOs, máquina de estados, tests)
-- [ ] **Fase 2:** persistencia de la orden (puerto + JPA + Testcontainers)
-- [ ] **Fase 3:** comercios y onboarding + seguridad JWT
-- [ ] **Fase 4:** crear orden + QR (con proveedor simulado)
-- [ ] **Fase 5:** webhook + idempotencia + notificación
-- [ ] **Fase 6:** jobs de expiración y reconciliación
-- [ ] **Fase 7:** liquidación y conciliación + comisión
-- [ ] **Fase 8:** dashboard del comercio (ventas, exportar, comprobantes)
+- [x] **Fase 1:** dominio de `OrdenDePago` (VOs, máquina de estados, tests) — `v0.1.0`
+- [x] **Fase 2:** persistencia de la orden (puerto + JPA + Testcontainers) — `v0.1.0`
+- [x] **Fase 3:** comercios y onboarding + seguridad JWT — `v0.2.0`
+- [x] **Fase 4:** crear orden + QR (con proveedor simulado) — `v0.3.0`
+- [x] **Fase 5:** webhook + idempotencia + notificación — `v0.4.0`
+- [x] **Fase 6:** jobs de expiración y reconciliación — `v0.5.0`
+- [x] **Fase 7:** liquidación y conciliación + comisión — `v0.5.0`
+- [ ] **Fase 8:** dashboard del comercio — 🔵 en curso (Sprint 6): ventas del
+      día/mes ✅ (HU-018), exportar CSV 🔵 (HU-019), comprobantes ⬜ (HU-020)
 - [ ] **Fase 9:** integración real Binance Pay (sandbox → producción)
 - [ ] **Fase 10:** piloto con comercios reales
+
+Backlog y estado de sprints al detalle: `docs/gestion/02` y `docs/gestion/03`.
 
 **MVP con un solo riel: Binance Pay.** El riel on-chain (USDT/USDC vía rampa) y la
 liquidación vía Bre-B vienen después, como nuevos adaptadores del mismo puerto.
