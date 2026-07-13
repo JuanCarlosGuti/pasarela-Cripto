@@ -1,0 +1,31 @@
+meta {
+  name: Historial de órdenes (paginado)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/ventas?pagina=0&tamano=20
+  body: none
+  auth: bearer
+}
+
+params:query {
+  pagina: 0
+  tamano: 20
+  ~desde: 2026-07-01
+  ~hasta: 2026-07-31
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-018 (Sprint 6). Solo rol COMERCIO.
+
+  Historial del comercio en [desde, hasta] (fechas de Colombia,
+  inclusivas; sin fechas = el mes en curso), de la más reciente a la más
+  vieja. Incluye TODOS los estados — también pendientes y expiradas.
+  Tamaño de página máximo: 100.
+}

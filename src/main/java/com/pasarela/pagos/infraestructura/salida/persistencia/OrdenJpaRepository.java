@@ -34,4 +34,29 @@ interface OrdenJpaRepository extends JpaRepository<OrdenJpaEntity, UUID> {
 			@Param("hasta") Instant hasta,
 			@Param("estados") Collection<String> estados);
 
+	@Query("""
+			select new com.pasarela.pagos.infraestructura.salida.persistencia.TotalizacionDeVentas(
+				coalesce(sum(o.monto), 0), count(o))
+			from OrdenJpaEntity o
+			where o.comercioId = :comercioId
+			  and o.creadaEn >= :desde and o.creadaEn < :hasta
+			  and o.estado in :estados
+			""")
+	TotalizacionDeVentas totalizarVentas(
+			@Param("comercioId") UUID comercioId,
+			@Param("desde") Instant desde,
+			@Param("hasta") Instant hasta,
+			@Param("estados") Collection<String> estados);
+
+	@Query("""
+			select o from OrdenJpaEntity o
+			where o.comercioId = :comercioId
+			  and o.creadaEn >= :desde and o.creadaEn < :hasta
+			""")
+	org.springframework.data.domain.Page<OrdenJpaEntity> paginaDelComercio(
+			@Param("comercioId") UUID comercioId,
+			@Param("desde") Instant desde,
+			@Param("hasta") Instant hasta,
+			org.springframework.data.domain.Pageable paginacion);
+
 }
