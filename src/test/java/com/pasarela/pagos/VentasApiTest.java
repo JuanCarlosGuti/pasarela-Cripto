@@ -18,14 +18,17 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Dashboard de ventas end-to-end (HU-018): los totales solo cuentan ventas
- * efectivas, el listado pagina, y cada comercio ve EXCLUSIVAMENTE lo suyo.
+ * Dashboard de ventas end-to-end (HU-018/019): los totales solo cuentan ventas
+ * efectivas, el listado pagina, el export es CSV contador-ready, y cada
+ * comercio ve EXCLUSIVAMENTE lo suyo.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -97,6 +100,67 @@ class VentasApiTest {
 		mvc.perform(get("/api/ventas/resumen")
 						.header("Authorization", "Bearer " + token(adminEmail, adminContrasena)))
 				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void exportar_devuelveCsvConBomYSepararorPuntoYComa_conLasFilasDelComercio() throws Exception {
+		Comercio comercio = comercioVerificado("890925368-4", "export-a@dashboard.co");
+		pagarOrden(crearOrden(comercio.token(), 40000), "evt-exp-1", 40000);
+		crearOrden(comercio.token(), 15000); // PENDIENTE_PAGO: el export SÍ la incluye
+
+		MvcResult respuesta = mvc.perform(get("/api/ventas/exportar")
+						.header("Authorization", "Bearer " + comercio.token()))
+				.andExpect(status().isOk())
+				.andExpect(header().string("Content-Type", "text/csv;charset=UTF-8"))
+				.andExpect(header().exists("Content-Disposition"))
+				.andReturn();
+
+		byte[] cuerpo = respuesta.getResponse().getContentAsByteArray();
+		// BOM UTF-8: EF BB BF, exigido por el criterio (Excel en español)
+		assertThat(cuerpo[0] & 0xFF).isEqualTo(0xEF);
+		assertThat(cuerpo[1] & 0xFF).isEqualTo(0xBB);
+		assertThat(cuerpo[2] & 0xFF).isEqualTo(0xBF);
+
+		String csv = new String(cuerpo, java.nio.charset.StandardCharsets.UTF_8);
+		String[] lineas = csv.replace("﻿", "").split("\r\n");
+		assertThat(lineas[0]).isEqualTo("Fecha;Referencia;Monto bruto;Comisión;Neto;Estado");
+		// 2 filas de datos: la pagada (2.5% de 40000=1000, neto 39000) y la pendiente
+		assertThat(lineas).hasSize(3);
+		assertThat(csv).contains(";40000;1000;39000;PAGO_DETECTADO")
+				.contains(";15000;375;14625;PENDIENTE_PAGO");
+	}
+
+	@Test
+	void exportar_conRangoSinMovimientos_devuelveArchivoValidoSoloConEncabezados() throws Exception {
+		Comercio comercio = comercioVerificado("900552080-2", "export-vacio@dashboard.co");
+
+		MvcResult respuesta = mvc.perform(get("/api/ventas/exportar")
+						.param("desde", "2020-01-01")
+						.param("hasta", "2020-01-31")
+						.header("Authorization", "Bearer " + comercio.token()))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		String csv = new String(respuesta.getResponse().getContentAsByteArray(),
+				java.nio.charset.StandardCharsets.UTF_8).replace("﻿", "");
+		assertThat(csv.trim()).isEqualTo("Fecha;Referencia;Monto bruto;Comisión;Neto;Estado");
+	}
+
+	@Test
+	void exportar_aislaLosMovimientosPorComercio() throws Exception {
+		Comercio comercioA = comercioVerificado("900123765-9", "export-b-a@dashboard.co");
+		Comercio comercioB = comercioVerificado("811039091-1", "export-b-b@dashboard.co");
+		crearOrden(comercioA.token(), 77000);
+		crearOrden(comercioB.token(), 88000);
+
+		MvcResult respuestaB = mvc.perform(get("/api/ventas/exportar")
+						.header("Authorization", "Bearer " + comercioB.token()))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		String csvB = new String(respuestaB.getResponse().getContentAsByteArray(),
+				java.nio.charset.StandardCharsets.UTF_8);
+		assertThat(csvB).contains("88000").doesNotContain("77000");
 	}
 
 	// --- ayudas (patrón de WebhooksApiTest) ---

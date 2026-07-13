@@ -1,0 +1,40 @@
+meta {
+  name: Exportar movimientos (CSV)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/ventas/exportar
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~desde: 2026-07-01
+  ~hasta: 2026-07-31
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-019 (Sprint 6). Solo rol COMERCIO.
+
+  Exporta el historial completo del comercio a CSV, listo para el contador:
+  columnas Fecha;Referencia;Monto bruto;Comisión;Neto;Estado, separador
+  ';' y BOM UTF-8 (se abre bien en Excel en español). Incluye TODOS los
+  estados — no solo ventas efectivas, es el historial completo.
+
+  La comisión/neto se calculan por fila con la tasa vigente de la
+  plataforma (la misma que usa el registro de liquidaciones): es lo que
+  produciría liquidar esa orden sola, hoy.
+
+  Rango [desde, hasta] inclusivo en fechas de Colombia; sin fechas, el mes
+  en curso. Un rango sin movimientos devuelve un archivo válido con solo
+  encabezados.
+
+  En Bruno, usa "Save Response" o el botón de descarga para guardarlo como
+  .csv y abrirlo en Excel.
+}

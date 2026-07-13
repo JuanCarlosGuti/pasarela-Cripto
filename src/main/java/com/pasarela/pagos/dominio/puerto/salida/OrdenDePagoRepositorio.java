@@ -70,4 +70,11 @@ public interface OrdenDePagoRepositorio {
 	record PaginaDeOrdenes(List<OrdenDePago> ordenes, long totalElementos) {
 	}
 
+	/**
+	 * TODAS las órdenes del comercio en [desde, hasta), sin límite de página
+	 * (HU-019: export completo del historial), orden ascendente por
+	 * `creadaEn` — cronológico, como espera un contador.
+	 */
+	List<OrdenDePago> listarTodasDelComercio(IdComercio comercioId, Instant desde, Instant hasta);
+
 }
