@@ -70,6 +70,7 @@ class CrearOrdenService implements CrearOrdenUseCase {
 | `ReconciliarOrdenesUseCase` | Revisar órdenes pendientes por si se perdió un webhook; confirma por la MISMA ruta que el webhook | Sistema (job) |
 | `ConsultarVentasUseCase` | Dashboard: ventas del día/mes y listado paginado | Comercio |
 | `ExportarVentasUseCase` | Exportar historial a CSV (HU-019) | Comercio |
+| `GenerarComprobanteUseCase` | Comprobante de una venta pagada/liquidada; no pagada → 422 (HU-020) | Comercio/Admin |
 
 ### Contexto Liquidaciones
 
