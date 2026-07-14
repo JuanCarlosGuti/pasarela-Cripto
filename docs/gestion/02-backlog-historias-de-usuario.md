@@ -387,6 +387,22 @@ ante el cliente y el contador.
 
 ## Épica E9 — Binance Pay real *(Sprint 7 / Fase 9)*
 
+### 🔵 T-007 — Discovery y selección del proveedor de rampa
+**Como** Plataforma **quiero** elegir el proveedor que convierte y liquida COP
+directo al comercio **para** cumplir la promesa de valor del MVP (ADR-006).
+**Es el camino crítico del piloto (Sprint 8).**
+
+**Criterios de aceptación:**
+- Demos con ≥2 candidatos usando el checklist de `docs/negocio/04` (Mural Pay
+  principal, Bitso Business respaldo, según investigación verificada).
+- Cotización **por escrito** del costo todo-en (fee + spread vs TRM + payout)
+  para un ticket de $50.000 COP; el elegido debe permitir margen ≥1% con
+  comisión ≤2.5% (o se registra la decisión de ajustar la comisión).
+- Verificado con el proveedor: liquidación directa al comercio final, alta de
+  sub-comercios por API con su KYB, y que los fondos jamás pasan por cuentas
+  de la plataforma (REGLA DE ORO).
+- Decisión registrada actualizando ADR-006 (proveedor principal + respaldo).
+
 ### ⬜ HU-021 — Adaptador real de Binance Pay
 **Como** Plataforma **quiero** reemplazar el simulador por el adaptador real de
 Binance Pay **para** procesar pagos verdaderos en sandbox.
@@ -452,7 +468,7 @@ de un problema antes que el comercio.
 | 4 | Fase 5 | HU-010, HU-011, HU-012, HU-013 |
 | 5 | Fases 6-7 | HU-014, HU-015, HU-016, HU-017 |
 | 6 | Fase 8 | HU-018, HU-019, HU-020 |
-| 7 | Fase 9 | HU-021, HU-022 |
+| 7 | Fase 9 | T-007, HU-021, HU-022 |
 | 8 | Fase 10 | HU-023, HU-024 |
 
 > **Cómo usar este backlog:** al iniciar una historia, cambiar ⬜ → 🔵 y crear la rama
