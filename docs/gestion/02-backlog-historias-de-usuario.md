@@ -364,7 +364,7 @@ negocio sin pedirle nada a nadie.
 - Los totales solo cuentan órdenes efectivamente pagadas/liquidadas (definición
   exacta documentada en el endpoint).
 
-### 🔵 HU-019 — Exportar movimientos (contador-ready)
+### ✅ HU-019 — Exportar movimientos (contador-ready)
 **Como** Comercio **quiero** exportar mi historial a CSV/Excel **para** entregárselo
 a mi contador tal cual.
 
