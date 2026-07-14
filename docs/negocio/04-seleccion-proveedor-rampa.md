@@ -20,19 +20,33 @@
 | USDT/USDC en redes baratas (Tron/BSC/Polygon) | Requerido (tickets pequeños) |
 | Operación regulada en Colombia (SFC/UIAF, SARLAFT) | Obligatorio |
 
-## 2. Veredicto por proveedor (estado de la evidencia)
+## 2. Veredicto por proveedor (verificación adversarial COMPLETA, 2026-07-14)
 
-| Proveedor | Liquida COP a terceros | Sub-comercios por API | Cobro + webhooks firmados | Veredicto |
-|---|---|---|---|---|
-| **Mural Pay** | ✅ Verificado (3-0) | ✅ Verificado (3-0) — "Organizations" con KYB de Mural | ✅ Verificado (3-0) — Payins COP + ECDSA | **PRINCIPAL** |
-| **Bitso Business** | ✅ Verificado (2-0) — "Withdrawing COP to a Third Party" | ⚠️ Señales sin verificar | ⚠️ Juno sin firma documentada (señal) | **RESPALDO** |
-| **Koywe** | ⚠️ Señal: sí, pero desde saldo virtual de la plataforma (🚨 posible choque con REGLA DE ORO) | ⚠️ Señal: sí | ⚠️ Señal: dirección única por orden en offramp | Tercer candidato, re-verificar |
-| **Cobre** | ⚠️ Señal: sí vía Bre-B/FastPay/ACH | ⚠️ Counterparties con llaves Bre-B | ⚠️ Señal: HMAC-SHA256, pero **sin cobro cripto entrante** | Riel de liquidación, no rampa completa |
-| **Minteo (COPM)** | ⚠️ Señal: emisor de stablecoin, no procesador de liquidación fiat | — | — | No encaja como rampa |
+| Proveedor | Liquida COP a terceros | Sub-comercios por API | Cobro cripto por orden | Webhooks firmados | Veredicto |
+|---|---|---|---|---|---|
+| **Mural Pay** | ✅ (3-0) bancos CO con datos del beneficiario | ✅ (3-0) "Organizations": KYB de Mural, **fondos a nombre del comercio** | ⚠️ pay-in cripto SIN dirección única por orden confirmada | ✅ (3-0) ECDSA | **PRINCIPAL** |
+| **Koywe** | ✅ (3-0) todos los bancos CO, 1-2h hábiles — 🚨 **desde saldo virtual a nombre de la plataforma** | ✅ (2-1) KYB gestionado por Koywe | ✅ (3-0) **única con dirección de depósito ÚNICA por orden** (offramp) | ⚠️ sin verificar | **RESPALDO** (si resuelve el saldo virtual) |
+| **Bitso Business** | ✅ (3-0) "Withdrawing COP to a Third Party" | ⚠️ sin verificar | ❌ Juno orientado MXN/BRL sin COP/USDT (3-0); redes USDT refutadas (1-2) | ❌ (3-0) Juno **sin firma**, solo allowlist de IP | Tercero |
+| **Cobre** | ✅ (3-0) Bre-B/FastPay/ACH, "pagos a comercios locales" | ✅ Counterparties por llave Bre-B (3-0) | ❌ recaudo solo FIAT (Nequi/PSE/Bre-B, 2-0); cobro cripto sin evidencia | ✅ (3-0) HMAC-SHA256 | **Riel de liquidación** a combinar |
+| **Minteo (COPM)** | ⚠️ sin verificar (emisor de stablecoin, no rampa) | — | — | — | No encaja |
 
-**Leyenda:** ✅ = sobrevivió verificación adversarial (3 verificadores independientes).
-⚠️ = señal de fuentes primarias que quedó sin verificar (fallo de infraestructura del
-verificador); tratar como hipótesis.
+**Leyenda:** ✅/❌ = sobrevivió/refutado en verificación adversarial (3 verificadores
+independientes). ⚠️ = sin verificar. Votación entre paréntesis.
+
+**Lectura estratégica tras la verificación completa:**
+- **Mural Pay sigue PRINCIPAL**: único donde la REGLA DE ORO encaja de fábrica (los
+  fondos viven en la cuenta de la Organization del comercio, jamás de la plataforma).
+  Su duda: atribución del pago cripto entrante por orden.
+- **Koywe sube a RESPALDO serio**: es el único con nuestro flujo de cobro exacto
+  confirmado (dirección única por orden) + payout a terceros + sub-merchants API.
+  Su riesgo es espejo del de Mural: los fondos pasan por un saldo virtual **a nombre
+  de la plataforma** → pregunta jurídica decisiva: ¿puede el saldo estar a nombre
+  del sub-comercio?
+- **Bitso baja a tercero**: cumple el payout a terceros, pero sus webhooks sin firma
+  criptográfica chocan con nuestro requisito de seguridad y su producto stablecoin
+  (Juno) no cubre COP.
+- **Cobre queda confirmado como riel de liquidación** (Bre-B + webhooks HMAC) para
+  una arquitectura combinada (cobro con otro proveedor); no es rampa completa.
 
 ## 3. Evidencia clave verificada (con cita)
 
@@ -101,8 +115,11 @@ bitso.com/business formulario · Koywe → koywe.com "Contact/Sales".
 
 ## 7. Próximos pasos
 
-- [ ] Re-verificar las 19 afirmaciones pendientes de Koywe/Cobre/Minteo (en curso).
-- [ ] Enviar contacto a Mural Pay (principal) y Bitso Business (respaldo).
-- [ ] Demos con cotización todo-en por escrito.
+- [x] Re-verificar las afirmaciones pendientes (2026-07-14: 19 confirmadas, 3
+      refutadas, solo Minteo y 2 detalles de Cobre quedaron sin veredicto).
+- [ ] Enviar contacto a **Mural Pay (principal)** y **Koywe (respaldo)**; Bitso
+      como tercera opción.
+- [ ] Demos con cotización todo-en **por escrito** (ver preguntas §4 y §5; para
+      Koywe, la pregunta jurídica del saldo virtual es eliminatoria).
 - [ ] Actualizar ADR-006 con el proveedor elegido y el mecanismo de comisión.
 - [ ] Solo entonces: construir el adaptador del proveedor (mismo puerto, ADR-003).
