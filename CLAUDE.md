@@ -167,6 +167,7 @@ CREADA → PENDIENTE_PAGO → PAGO_DETECTADO → CONVERTIDA → LIQUIDADA
 | Estrategia de pruebas | `docs/06-estrategia-de-pruebas.md` |
 | Integración de proveedores | `docs/07-integracion-proveedores.md` |
 | Roadmap de desarrollo (fases 0-10) | `docs/08-roadmap-desarrollo.md` |
+| Checklist del sandbox de Binance Pay | `docs/09-checklist-sandbox-binance-pay.md` |
 | Decisiones de arquitectura | `docs/adr/` |
 | Documentos de negocio | `docs/negocio/` |
 | **Flujo de trabajo Git (GitFlow simplificado)** | `docs/gestion/01-flujo-de-trabajo-git.md` |
