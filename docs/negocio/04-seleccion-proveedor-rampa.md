@@ -117,9 +117,14 @@ bitso.com/business formulario · Koywe → koywe.com "Contact/Sales".
 
 - [x] Re-verificar las afirmaciones pendientes (2026-07-14: 19 confirmadas, 3
       refutadas, solo Minteo y 2 detalles de Cobre quedaron sin veredicto).
-- [ ] Enviar contacto a **Mural Pay (principal)** y **Koywe (respaldo)**; Bitso
-      como tercera opción.
-- [ ] Demos con cotización todo-en **por escrito** (ver preguntas §4 y §5; para
-      Koywe, la pregunta jurídica del saldo virtual es eliminatoria).
+- [x] **Contacto enviado 2026-07-14** a Mural Pay (support@ + formulario) y a
+      Koywe (contacto@ + founders@), con el formato "5 preguntas puntuales por
+      correo, llamada solo si hace falta" y presentando el proyecto como en
+      etapa de desarrollo. Bitso queda en reserva: se envía su formulario si
+      los dos primeros no responden.
+      **Seguimiento:** si no hay respuesta en 4-5 días hábiles (~2026-07-21),
+      enviar recordatorio corto respondiendo al mismo hilo.
+- [ ] Evaluar respuestas contra §1: la pregunta 1 de cada correo es
+      eliminatoria; la cotización todo-en debe llegar **por escrito**.
 - [ ] Actualizar ADR-006 con el proveedor elegido y el mecanismo de comisión.
 - [ ] Solo entonces: construir el adaptador del proveedor (mismo puerto, ADR-003).
