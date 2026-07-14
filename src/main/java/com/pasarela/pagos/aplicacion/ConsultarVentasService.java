@@ -15,8 +15,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Dashboard del comercio (HU-018). La "venta efectiva" está definida en
@@ -27,9 +29,10 @@ import java.util.UUID;
 @Service
 public class ConsultarVentasService implements ConsultarVentasUseCase {
 
-	/** Qué cuenta como venta (la definición documentada del endpoint). */
-	static final Set<EstadoOrden> VENTA_EFECTIVA = Set.of(
-			EstadoOrden.PAGO_DETECTADO, EstadoOrden.CONVERTIDA, EstadoOrden.LIQUIDADA);
+	/** Qué cuenta como venta: la definición vive en el dominio (HU-020 la reutiliza). */
+	static final Set<EstadoOrden> VENTA_EFECTIVA = Arrays.stream(EstadoOrden.values())
+			.filter(EstadoOrden::esVentaEfectiva)
+			.collect(Collectors.toUnmodifiableSet());
 
 	private static final ZoneId ZONA_COLOMBIA = ZoneId.of("America/Bogota");
 	private static final int TAMANO_MAXIMO_DE_PAGINA = 100;

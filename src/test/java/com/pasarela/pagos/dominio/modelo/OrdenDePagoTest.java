@@ -323,6 +323,29 @@ class OrdenDePagoTest {
 					TransicionEstado.de(EstadoOrden.CREADA, EstadoOrden.PENDIENTE_PAGO, CREADA_EN)))
 					.isInstanceOf(UnsupportedOperationException.class);
 		}
+
+		@Test
+		void momentoDeTransicionA_devuelveElMomentoEnQueLaOrdenLlegoAEseEstado() {
+			OrdenDePago orden = ordenNueva();
+			Instant registrada = CREADA_EN.plusSeconds(10);
+			Instant pagada = CREADA_EN.plusSeconds(60);
+			Instant convertida = CREADA_EN.plusSeconds(120);
+
+			orden.registrarCobroEnProveedor(registrada);
+			orden.confirmarPago(eventoDePagoDe(orden), pagada);
+			orden.marcarComoConvertida(convertida);
+
+			assertThat(orden.momentoDeTransicionA(EstadoOrden.PENDIENTE_PAGO)).contains(registrada);
+			assertThat(orden.momentoDeTransicionA(EstadoOrden.PAGO_DETECTADO)).contains(pagada);
+			assertThat(orden.momentoDeTransicionA(EstadoOrden.CONVERTIDA)).contains(convertida);
+		}
+
+		@Test
+		void momentoDeTransicionA_unEstadoPorElQueNuncaPaso_esVacio() {
+			assertThat(ordenNueva().momentoDeTransicionA(EstadoOrden.PENDIENTE_PAGO)).isEmpty();
+			assertThat(ordenEnEstado(EstadoOrden.PAGO_DETECTADO)
+					.momentoDeTransicionA(EstadoOrden.LIQUIDADA)).isEmpty();
+		}
 	}
 
 	@Nested

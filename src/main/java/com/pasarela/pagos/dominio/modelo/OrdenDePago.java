@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Agregado raíz del contexto de pagos: un cobro que un comercio le hace a un
@@ -212,6 +213,18 @@ public class OrdenDePago {
 	/** Copia inmutable: el historial solo crece por transiciones de la propia orden. */
 	public List<TransicionEstado> historial() {
 		return List.copyOf(historial);
+	}
+
+	/**
+	 * Momento en que la orden llegó al estado dado, según el historial de
+	 * auditoría; vacío si nunca pasó por él. Cada estado se alcanza a lo sumo
+	 * una vez (la matriz de transiciones no tiene ciclos).
+	 */
+	public Optional<Instant> momentoDeTransicionA(EstadoOrden hacia) {
+		return historial.stream()
+				.filter(transicion -> transicion.hacia() == hacia)
+				.findFirst()
+				.map(TransicionEstado::momento);
 	}
 
 	/** Marca opaca de concurrencia optimista; null si la orden no viene de BD. */

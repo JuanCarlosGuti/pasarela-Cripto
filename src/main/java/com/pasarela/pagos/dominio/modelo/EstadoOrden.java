@@ -34,4 +34,13 @@ public enum EstadoOrden {
 		return this == LIQUIDADA || this == EXPIRADA || this == EN_REVISION;
 	}
 
+	/**
+	 * Venta efectiva: el pago ya fue detectado o va más allá. Es la definición
+	 * que suman los totales del dashboard (HU-018) y la condición para emitir
+	 * comprobante (HU-020); pendientes, expiradas, fallidas y en revisión no.
+	 */
+	public boolean esVentaEfectiva() {
+		return this == PAGO_DETECTADO || this == CONVERTIDA || this == LIQUIDADA;
+	}
+
 }
