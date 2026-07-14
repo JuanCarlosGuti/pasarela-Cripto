@@ -202,8 +202,7 @@ Ante cualquier duda de diseño, **consulta primero estos documentos** antes de a
 - [x] **Fase 5:** webhook + idempotencia + notificación — `v0.4.0`
 - [x] **Fase 6:** jobs de expiración y reconciliación — `v0.5.0`
 - [x] **Fase 7:** liquidación y conciliación + comisión — `v0.5.0`
-- [ ] **Fase 8:** dashboard del comercio — 🔵 en curso (Sprint 6): ventas del
-      día/mes ✅ (HU-018), exportar CSV 🔵 (HU-019), comprobantes ⬜ (HU-020)
+- [x] **Fase 8:** dashboard del comercio (ventas día/mes + export CSV + comprobante) — `v0.6.0`
 - [ ] **Fase 9:** integración real Binance Pay (sandbox → producción)
 - [ ] **Fase 10:** piloto con comercios reales
 

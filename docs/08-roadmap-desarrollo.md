@@ -140,12 +140,12 @@ simulado).
 ## Fase 8 — Dashboard del comercio
 
 - [x] `ConsultarVentasUseCase` (ventas del día/mes, contexto **Pagos** — HU-018).
-- [ ] `ExportarVentasUseCase` (CSV contador-ready — HU-019, 🔵 en curso).
-- [ ] Comprobante por transacción (HU-020).
-- [x] Endpoints REST para el frontend (`/api/ventas/*`, ampliándose con HU-019/020).
+- [x] `ExportarVentasUseCase` (CSV contador-ready — HU-019).
+- [x] Comprobante por transacción (`GenerarComprobanteUseCase` — HU-020).
+- [x] Endpoints REST para el frontend (`/api/ventas/*`, `/api/ordenes/{id}/comprobante`).
 
 **Criterio de fin de fase:** el comercio ve sus ventas y exporta su historial.
-**Sprint 6 en curso** (sin tag todavía).
+**Cerrada:** `v0.6.0`.
 
 ---
 
