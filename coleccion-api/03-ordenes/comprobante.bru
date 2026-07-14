@@ -1,0 +1,33 @@
+meta {
+  name: Comprobante de la venta
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/ordenes/{{ordenId}}/comprobante
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  ✅ DISPONIBLE DESDE HU-020 (Sprint 6).
+
+  El soporte de la venta para el cliente y el contador: número de
+  comprobante (el id de la orden — pedirlo dos veces da el mismo),
+  referencia del cobro ante el proveedor, monto, estado y los timestamps
+  de creación, pago detectado y liquidación (null mientras el proveedor
+  no liquide).
+
+  Solo órdenes PAGO_DETECTADO, CONVERTIDA o LIQUIDADA tienen comprobante:
+  una pendiente/expirada/fallida responde 422. Mismo aislamiento que el
+  detalle: el dueño (o el ADMIN); la de otro comercio responde 404.
+
+  Flujo para probar: "Crear orden de pago (QR)" → "Webhook de pago
+  (simulado)" → este request. La variable `ordenId` la deja lista la
+  creación de la orden.
+}

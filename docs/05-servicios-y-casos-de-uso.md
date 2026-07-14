@@ -47,29 +47,37 @@ class CrearOrdenService implements CrearOrdenUseCase {
 
 | Caso de uso | Descripción | Actor |
 |-------------|-------------|-------|
-| `RegistrarComercioUseCase` | Alta de un comercio (queda `PENDIENTE`) | Comercio |
-| `VerificarComercioUseCase` | Aprobar/rechazar un comercio | Admin |
+| `RegistrarComercioUseCase` | Alta de un comercio (queda `PENDIENTE`); crea también la cuenta de acceso del dueño vía el puerto compartido `CuentasDeAccesoPort` | Comercio |
+| `DecidirVerificacionUseCase` | Aprobar/rechazar/suspender/reactivar un comercio | Admin |
 | `ConsultarComercioUseCase` | Ver datos y estado del comercio | Comercio/Admin |
 | `ActualizarLimitesUseCase` | Ajustar topes de operación | Admin |
+
+### Contexto Seguridad
+
+| Caso de uso | Descripción | Actor |
+|-------------|-------------|-------|
+| `AutenticarUsuarioUseCase` | Login: valida credenciales y emite JWT (401 idéntico si el usuario no existe) | Comercio/Admin |
 
 ### Contexto Pagos
 
 | Caso de uso | Descripción | Actor |
 |-------------|-------------|-------|
-| `CrearOrdenUseCase` | Generar un cobro en COP + QR | Comercio |
+| `CrearOrdenUseCase` | Generar un cobro en COP + QR (autoriza contra `comercios` vía `AutorizadorDeCobros`) | Comercio |
 | `ConsultarOrdenUseCase` | Ver estado de una orden | Comercio/Pagador |
-| `ProcesarWebhookPagoUseCase` | Procesar confirmación del proveedor (idempotente) | Sistema (webhook) |
-| `ExpirarOrdenesUseCase` | Expirar órdenes vencidas sin pago | Sistema (job) |
-| `ReconciliarOrdenesUseCase` | Revisar órdenes pendientes por si se perdió un webhook | Sistema (job) |
+| `ConsultarPagoPublicoUseCase` | Consulta pública por referencia (solo estado y monto) | Pagador |
+| `ProcesarWebhookUseCase` | Procesar confirmación del proveedor (idempotente) | Sistema (webhook) |
+| `ExpirarOrdenesVencidasUseCase` | Expirar órdenes vencidas sin pago | Sistema (job) |
+| `ReconciliarOrdenesUseCase` | Revisar órdenes pendientes por si se perdió un webhook; confirma por la MISMA ruta que el webhook | Sistema (job) |
+| `ConsultarVentasUseCase` | Dashboard: ventas del día/mes y listado paginado | Comercio |
+| `ExportarVentasUseCase` | Exportar historial a CSV (HU-019) | Comercio |
+| `GenerarComprobanteUseCase` | Comprobante de una venta pagada/liquidada; no pagada → 422 (HU-020) | Comercio/Admin |
 
 ### Contexto Liquidaciones
 
 | Caso de uso | Descripción | Actor |
 |-------------|-------------|-------|
 | `RegistrarLiquidacionUseCase` | Registrar liquidación reportada por el proveedor | Sistema |
-| `ConciliarLiquidacionUseCase` | Conciliar registrado vs. reportado | Sistema/Admin |
-| `ConsultarVentasUseCase` | Dashboard: ventas del comercio | Comercio |
-| `ExportarMovimientosUseCase` | Exportar historial a CSV/Excel | Comercio |
+| `ConciliarLiquidacionUseCase` | Conciliar registrado vs. reportado; discrepancia con detalle + alerta | Sistema/Admin |
 
 ---
 
@@ -81,22 +89,30 @@ Definidos en `dominio/puerto/salida`, implementados en `infraestructura`.
 
 ```java
 public interface OrdenDePagoRepositorio {
-    void guardar(OrdenDePago orden);
+    OrdenDePago guardar(OrdenDePago orden);
     Optional<OrdenDePago> buscarPorId(IdOrden id);
     Optional<OrdenDePago> buscarPorReferencia(ReferenciaPago referencia);
-    List<OrdenDePago> buscarPendientesExpiradas(Instant ahora);
+    List<OrdenDePago> buscarPendientesExpiradas(Instant ahora, int limite);
+    List<OrdenDePago> buscarPendientesCreadasAntesDe(Instant limite, int maximo);
+    Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta);
+    VentasTotalizadas totalizarVentas(IdComercio comercioId, Instant desde, Instant hasta, Set<EstadoOrden> estados);
+    PaginaDeOrdenes listarDelComercio(IdComercio comercioId, Instant desde, Instant hasta, int pagina, int tamano);
 }
 
 public interface ComercioRepositorio {
-    void guardar(Comercio comercio);
+    Comercio guardar(Comercio comercio);
     Optional<Comercio> buscarPorId(IdComercio id);
+    Optional<Comercio> buscarPorNit(Nit nit);
 }
 
 public interface EventoProveedorRepositorio {
-    boolean existeEvento(String proveedor, String idExternoEvento); // idempotencia
-    void guardar(EventoProveedor evento);
+    boolean existe(String proveedor, String idExternoEvento); // idempotencia
+    EventoProveedor guardar(EventoProveedor evento); // transacción PROPIA (REQUIRES_NEW)
 }
 ```
+
+> Firmas simplificadas para ilustrar el contrato; ver las clases reales en
+> `dominio/puerto/salida` de cada contexto para la lista completa y actualizada.
 
 ### Puerto del proveedor de pago (clave de la arquitectura)
 
@@ -107,59 +123,82 @@ Este puerto **abstrae cualquier riel de pago**. En el MVP lo implementa
 public interface ProveedorDePagoPort {
 
     // Crea el cobro en el proveedor y devuelve los datos para mostrar el QR/checkout.
-    CobroCreado crearCobro(SolicitudCobro solicitud);
+    CobroCreado crearCobro(SolicitudDeCobro solicitud);
 
-    // Valida la firma de un webhook entrante.
-    boolean firmaEsValida(WebhookEntrante webhook);
+    // Valida la firma de un webhook entrante (HMAC, comparación en tiempo constante).
+    boolean firmaValida(String cargaCruda, String firma);
 
-    // Traduce el webhook del proveedor a un evento de dominio.
-    EventoPago interpretar(WebhookEntrante webhook);
+    // Traduce el payload crudo del proveedor al lenguaje del dominio.
+    WebhookDelProveedor interpretarWebhook(String cargaCruda);
 
-    // Identifica de qué proveedor es (para el registro y la idempotencia).
-    String nombre();
+    // Consulta activa del estado de un cobro (HU-015, reconciliación): devuelve
+    // el pago en el MISMO formato del webhook (carga + firma), para confirmarlo
+    // por la ruta idempotente sin duplicar lógica.
+    Optional<CobroConsultado> consultarCobro(ReferenciaPago referencia, Dinero monto);
 }
 ```
+
+> El adaptador simulado (`ProveedorDePagoSimulado`) implementa el puerto completo;
+> el adaptador real de Binance Pay (Sprint 7, HU-021) será el segundo (ADR-003).
 
 ### Otros puertos de salida
 
 ```java
-public interface NotificadorPort {
-    void notificarPagoConfirmado(IdComercio comercio, IdOrden orden);
+public interface NotificadorDeComercios {
+    void pagoDetectado(OrdenDePago orden); // best-effort: su fallo no revierte nada
 }
 ```
+
+> **Notificación real (ADR-005):** no es push en tiempo real. El adaptador de hoy
+> (`NotificadorPorLog`) solo deja traza en el log; el frontend se entera por
+> **polling corto (2-3 s)** sobre `GET /api/ordenes/{id}` (caja del comercio) y
+> `GET /api/pagos/{referencia}` (página del pagador), ambos con
+> `Cache-Control: no-store`. Ver ADR-005 para el porqué (cero infraestructura
+> nueva; el puerto queda como punto de extensión si el piloto exige SSE/push).
 
 ---
 
 ## Flujo detallado: procesar webhook de pago (el más crítico)
 
-`ProcesarWebhookPagoUseCase` — debe ser **idempotente** y robusto:
+`ProcesarWebhookUseCase` — debe ser **idempotente** y robusto:
 
 ```
-1. Recibe el webhook crudo (WebhookEntrante).
+1. Recibe el webhook crudo (cargaCruda + firma).
 
-2. Valida la firma con el proveedor (ProveedorDePagoPort.firmaEsValida).
-   └─ Si es inválida → registrar y rechazar (posible intento malicioso).
+2. Valida la firma con el proveedor (ProveedorDePagoPort.firmaValida).
+   └─ Si es inválida → registrar el intento (firmaValida=false) y responder 401.
 
-3. Guarda el EventoProveedor CRUDO (antes de procesar).
+3. Interpreta el webhook → WebhookDelProveedor (idExternoEvento, referencia, monto...).
 
 4. Idempotencia: ¿ya existe (proveedor, idExternoEvento)?
-   └─ Sí → no hacer nada, responder 200 OK (ya procesado).
+   └─ Sí → no hacer nada, responder 200 OK con resultado DUPLICADO.
    └─ No → continuar.
 
-5. Interpreta el webhook → EventoPago (referencia, monto...).
+5. Guarda el EventoProveedor CRUDO (transacción PROPIA, REQUIRES_NEW: sobrevive
+   aunque el resto del procesamiento falle o se rechace).
+   └─ Si la constraint única lo detiene (carrera con otro hilo) → DUPLICADO.
 
 6. Busca la OrdenDePago por su referencia.
-   └─ No existe → registrar discrepancia, EN_REVISION.
+   └─ No existe → evento a revisión + alerta en bitácora, responde 200 (PARA_REVISION).
 
-7. Aplica la regla de dominio: orden.confirmarPago(evento).
-   └─ Si la transición no es válida (ya pagada, expirada) → manejar según caso.
+7. Camino triste: monto distinto al esperado → orden a EN_REVISION (vía FALLIDA
+   con motivo), evento a revisión + alerta, responde 200 (PARA_REVISION).
 
-8. Persiste la orden y marca el evento como procesado.
+8. Aplica la regla de dominio: orden.confirmarPago(evento).
+   └─ Si la transición no es válida (pago tardío tras expiración) → evento a
+      revisión con todos los datos para el reembolso, responde 200 (PARA_REVISION).
+   └─ Si pierde la carrera optimista contra el job de expiración (HU-014) →
+      recarga la orden y reintenta UNA vez por el mismo camino.
 
-9. Notifica al comercio (NotificadorPort) → "PAGADO ✓".
+9. Persiste la orden y marca el evento como procesado.
 
-10. Responde 200 OK al proveedor.
+10. Notifica al comercio (NotificadorDeComercios, best-effort — ver ADR-005).
+
+11. Responde 200 OK al proveedor con resultado CONFIRMADO.
 ```
+
+> Nunca se responde 5xx salvo firma inválida (401): un error de servidor
+> provocaría reintentos infinitos del proveedor (docs/07).
 
 > **Regla de oro del webhook:** procesar el mismo evento N veces produce **exactamente
 > el mismo resultado** que procesarlo una vez. Nunca doble cobro, nunca doble
@@ -169,11 +208,14 @@ public interface NotificadorPort {
 
 ## Jobs programados (respaldo)
 
-- **`ExpirarOrdenesUseCase`** — corre periódicamente; expira órdenes `PENDIENTE_PAGO`
-  vencidas.
-- **`ReconciliarOrdenesUseCase`** — corre periódicamente; para órdenes que llevan
-  mucho en `PENDIENTE_PAGO` o `PAGO_DETECTADO`, consulta al proveedor por si se perdió
-  un webhook, y reconcilia.
+- **`ExpirarOrdenesVencidasUseCase`** — corre periódicamente (job por lotes, cada
+  orden en su propia transacción); expira órdenes `PENDIENTE_PAGO` vencidas. Usa
+  bloqueo optimista (`@Version`) para resolver la carrera contra un pago simultáneo:
+  si pierde, cede — el pago gana.
+- **`ReconciliarOrdenesUseCase`** — corre periódicamente; para órdenes `PENDIENTE_PAGO`
+  atascadas, consulta al proveedor (`ProveedorDePagoPort.consultarCobro`) y, si
+  reporta el pago, lo confirma metiéndolo por `ProcesarWebhookUseCase` — la MISMA
+  ruta idempotente del webhook, sin duplicar lógica (cierra ADR-004).
 
 Estos jobs son la red de seguridad ante fallos de red o webhooks perdidos: el sistema
 **converge al estado correcto** aunque un webhook nunca llegue.

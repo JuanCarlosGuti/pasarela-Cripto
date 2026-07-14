@@ -7,11 +7,14 @@
 
 ## Contextos delimitados (bounded contexts)
 
-El MVP tiene tres contextos de negocio:
+El MVP tiene cuatro contextos de negocio:
 
 1. **Pagos** — el corazón: órdenes de pago y su ciclo de vida.
 2. **Comercios** — registro, verificación y datos del comercio.
 3. **Liquidaciones** — registro de liquidaciones y conciliación.
+4. **Seguridad** — cuentas de acceso (`Usuario`), autenticación y roles (`ADMIN`,
+   `COMERCIO`). No tiene agregado de negocio propio más allá de `Usuario`; existe
+   como contexto separado para no mezclar identidad/acceso con el dominio de comercios.
 
 ---
 
@@ -34,16 +37,20 @@ contexto de pagos.
 | `creadaEn` | `Instant` | Momento de creación |
 | `expiraEn` | `Instant` | Momento de expiración |
 | `historial` | `List<TransicionEstado>` | Auditoría de transiciones |
+| `version` | `Long` | Bloqueo optimista (HU-014): marca opaca que el dominio no interpreta; resuelve la carrera expiración-vs-pago. `null` si la orden aún no viene de BD. |
 
 **Comportamiento (métodos de dominio):**
 
-- `confirmarPago(EventoPago)` — transición a `PAGO_DETECTADO`. Valida que la orden
-  esté `PENDIENTE_PAGO` y no expirada.
-- `marcarComoConvertida()` — transición a `CONVERTIDA`.
-- `marcarComoLiquidada()` — transición a `LIQUIDADA`.
-- `expirar()` — transición a `EXPIRADA` si venció sin pago.
-- `marcarComoFallida(motivo)` — transición a `FALLIDA`.
-- `estaExpirada(Instant ahora)` — regla: ¿venció?
+- `registrarCobroEnProveedor(ahora)` — transición `CREADA` → `PENDIENTE_PAGO`.
+- `confirmarPago(EventoPago, ahora)` — transición a `PAGO_DETECTADO`. Valida que la
+  orden esté `PENDIENTE_PAGO` y no expirada.
+- `marcarComoConvertida(ahora)` — transición a `CONVERTIDA`.
+- `marcarComoLiquidada(ahora)` — transición a `LIQUIDADA`.
+- `expirar(ahora)` — transición a `EXPIRADA` si venció sin pago.
+- `marcarComoFallida(motivo, ahora)` — transición a `FALLIDA` (motivo obligatorio,
+  auditado en el historial).
+- `escalarARevision(ahora)` — transición `FALLIDA` → `EN_REVISION`.
+- `estaExpirada(Instant ahora)` — regla: ¿venció? (el instante se inyecta siempre).
 - `puedeConfirmarse()` — regla: ¿es válido confirmar en el estado actual?
 
 > **Invariante clave:** el estado solo cambia mediante estos métodos, que validan la
@@ -171,18 +178,21 @@ plataforma **no mueve** el dinero; solo lo **registra y concilia**.
 |----------|-------------|
 | `id` | Identificador |
 | `comercioId` | Comercio liquidado |
-| `ordenesIncluidas` | Órdenes que agrupa |
+| `ordenes` | IDs de las órdenes que agrupa (una orden no puede estar en dos liquidaciones) |
 | `montoBruto` | Suma cobrada |
 | `comisionPlataforma` | Comisión retenida/facturada |
-| `montoNetoComercio` | Lo que recibe el comercio |
+| `montoNetoComercio` | Lo que recibe el comercio (por diferencia: bruto − comisión, cuadra al centavo) |
 | `referenciaProveedor` | Referencia de la transferencia del proveedor |
 | `estado` | `REGISTRADA`, `CONCILIADA`, `DISCREPANCIA` |
 | `liquidadaEn` | Timestamp |
+| `detalleDiscrepancia` | Detalle de la diferencia (monto y/o órdenes faltantes/sobrantes) cuando `estado == DISCREPANCIA`; `null` si no hay |
 
 **Comportamiento:**
 
-- `conciliar(datosProveedor)` — compara lo registrado contra lo reportado por el
-  proveedor; pasa a `CONCILIADA` o marca `DISCREPANCIA`.
+- `conciliar(ReporteDelProveedor)` — compara lo registrado contra lo reportado por el
+  proveedor; pasa a `CONCILIADA` o marca `DISCREPANCIA` con el detalle completo
+  (jamás se cuadra en silencio). Solo válido si el estado actual es `REGISTRADA`
+  (una liquidación ya conciliada no se re-concilia — lanza `ConciliacionInvalidaException`).
 
 ---
 

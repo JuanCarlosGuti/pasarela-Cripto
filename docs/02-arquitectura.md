@@ -44,9 +44,9 @@ está mal.
 - **Reglas de negocio:** las transiciones de estado, los cálculos, las invariantes.
 - **Puertos (interfaces):** contratos de lo que el dominio necesita del exterior.
   - *Puertos de entrada* (driving): qué operaciones ofrece el núcleo. Ej:
-    `CrearOrdenDePagoUseCase`.
+    `CrearOrdenUseCase`, `ProcesarWebhookUseCase`.
   - *Puertos de salida* (driven): qué necesita el núcleo del mundo exterior. Ej:
-    `OrdenDePagoRepositorio`, `ProveedorDePagoPort`, `NotificadorPort`.
+    `OrdenDePagoRepositorio`, `ProveedorDePagoPort`, `NotificadorDeComercios`.
 
 ### 2. Aplicación (casos de uso)
 
@@ -100,25 +100,33 @@ com.pasarela
 ├── PagosApplication.java              # arranque Spring (único punto con @SpringBootApplication)
 │
 ├── compartido/                        # kernel compartido entre contextos
-│   ├── dominio/                       #   VOs y tipos comunes (Dinero, IdEntidad...)
-│   └── infraestructura/               #   config transversal, manejo de errores, seguridad
+│   ├── dominio/                       #   VOs, tipos comunes (Dinero, IdComercio...) y
+│   │                                  #   puertos que cruzan contextos (AutorizadorDeCobros,
+│   │                                  #   CuentasDeAccesoPort, LiquidadorDeOrdenes, Bitácora)
+│   └── infraestructura/               #   config transversal, manejo de errores, seguridad HTTP
 │
-├── pagos/                             # CONTEXTO: gestión de órdenes de pago
+├── pagos/                             # CONTEXTO: órdenes de pago, webhook, ventas
 │   ├── dominio/
 │   │   ├── modelo/                    #   OrdenDePago, EstadoOrden, ReferenciaPago...
 │   │   └── puerto/
-│   │       ├── entrada/               #   CrearOrdenUseCase, ConfirmarPagoUseCase...
+│   │       ├── entrada/               #   CrearOrdenUseCase, ProcesarWebhookUseCase...
 │   │       └── salida/                #   OrdenDePagoRepositorio, ProveedorDePagoPort...
-│   ├── aplicacion/                    #   CrearOrdenService, ConfirmarPagoService...
+│   ├── aplicacion/                    #   CrearOrdenService, ProcesarWebhookService...
 │   └── infraestructura/
-│       ├── entrada/rest/              #   OrdenController, WebhookController
-│       ├── salida/persistencia/       #   OrdenJpaEntity, OrdenRepositorioJpa, OrdenMapper
-│       └── salida/proveedor/          #   BinancePayAdapter
+│       ├── entrada/rest/              #   OrdenController, WebhookController, VentasController
+│       ├── entrada/programacion/      #   PlanificadorDeExpiracion, PlanificadorDeReconciliacion
+│       ├── salida/persistencia/       #   OrdenJpaEntity, OrdenDePagoRepositorioJpa, mapper
+│       └── salida/proveedor/          #   ProveedorDePagoSimulado (BinancePayAdapter en Sprint 7)
 │
 ├── comercios/                         # CONTEXTO: comercios y onboarding
 │   ├── dominio/
 │   ├── aplicacion/
 │   └── infraestructura/
+│
+├── seguridad/                         # CONTEXTO: cuentas de acceso, JWT y roles
+│   ├── dominio/                       #   Usuario, RolUsuario
+│   ├── aplicacion/                    #   AutenticarUsuarioService, CrearCuentaComercioService
+│   └── infraestructura/               #   AuthController, ServicioDeTokens (JWT), AdaptadorBCrypt
 │
 └── liquidaciones/                     # CONTEXTO: liquidación y conciliación
     ├── dominio/

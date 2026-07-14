@@ -1,6 +1,7 @@
 package com.pasarela.pagos.infraestructura.entrada.rest;
 
 import com.pasarela.compartido.dominio.excepcion.MontoInvalidoException;
+import com.pasarela.pagos.dominio.excepcion.ComprobanteNoDisponibleException;
 import com.pasarela.pagos.dominio.excepcion.FirmaDeWebhookInvalidaException;
 import com.pasarela.pagos.dominio.excepcion.OrdenInvalidaException;
 import com.pasarela.pagos.dominio.excepcion.OrdenNoEncontradaException;
@@ -34,6 +35,13 @@ public class ManejadorDeErroresPagos {
 	@ExceptionHandler(OrdenNoEncontradaException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorResponse noEncontrada(OrdenNoEncontradaException excepcion) {
+		return new ErrorResponse(excepcion.getMessage());
+	}
+
+	/** La orden existe pero su estado no da para comprobante (HU-020): 422. */
+	@ExceptionHandler(ComprobanteNoDisponibleException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	public ErrorResponse comprobanteNoDisponible(ComprobanteNoDisponibleException excepcion) {
 		return new ErrorResponse(excepcion.getMessage());
 	}
 

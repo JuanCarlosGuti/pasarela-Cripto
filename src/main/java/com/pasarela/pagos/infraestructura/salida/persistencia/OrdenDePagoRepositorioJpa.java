@@ -74,6 +74,34 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 	}
 
 	@Override
+	public VentasTotalizadas totalizarVentas(IdComercio comercioId, Instant desde,
+			Instant hasta, java.util.Set<EstadoOrden> estados) {
+		TotalizacionDeVentas fila = jpa.totalizarVentas(
+				comercioId.valor(), desde, hasta,
+				estados.stream().map(Enum::name).toList());
+		return new VentasTotalizadas(new Dinero(fila.total(), Moneda.COP), fila.cantidad());
+	}
+
+	@Override
+	public PaginaDeOrdenes listarDelComercio(IdComercio comercioId, Instant desde,
+			Instant hasta, int pagina, int tamano) {
+		var paginaJpa = jpa.paginaDelComercio(comercioId.valor(), desde, hasta,
+				PageRequest.of(pagina, tamano, Sort.by(Sort.Direction.DESC, "creadaEn")));
+		return new PaginaDeOrdenes(
+				paginaJpa.getContent().stream().map(mapper::aDominio).toList(),
+				paginaJpa.getTotalElements());
+	}
+
+	@Override
+	public List<OrdenDePago> listarTodasDelComercio(IdComercio comercioId, Instant desde,
+			Instant hasta) {
+		return jpa.listarTodasDelComercio(comercioId.valor(), desde, hasta)
+				.stream()
+				.map(mapper::aDominio)
+				.toList();
+	}
+
+	@Override
 	public Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta) {
 		return new Dinero(
 				jpa.sumarMontos(comercioId.valor(), desde, hasta, ESTADOS_QUE_CONSUMEN_CUPO),

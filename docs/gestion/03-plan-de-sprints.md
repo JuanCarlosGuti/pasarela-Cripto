@@ -182,7 +182,7 @@ maestro (abogado fintech, contratos).
 | 3 — Cobro QR simulado | ✅ cerrado | `v0.3.0` |
 | 4 — Webhook + idempotencia | ✅ cerrado | `v0.4.0` |
 | 5 — Jobs + liquidación | ✅ cerrado | `v0.5.0` |
-| 6 — Dashboard | ⬜ pendiente | — |
+| 6 — Dashboard | ✅ cerrado | `v0.6.0` |
 | 7 — Binance real | ⬜ pendiente | — |
 | 8 — Piloto | ⬜ pendiente | — |
 

@@ -121,6 +121,14 @@ git push origin main --tags
 git switch develop
 ```
 
+> **En la práctica (desde el Sprint 2):** el merge a `main` se hace vía **Pull
+> Request de GitHub** (`gh pr create` desde `develop`, mergear tras CI verde) en vez
+> de un merge local directo — mismo resultado, con el chequeo de CI como gate
+> explícito. El tag se crea después sobre el commit de merge del PR en `main`. Una
+> consecuencia menor: los tags no siempre son ancestros de `develop` en el grafo de
+> git (contenido equivalente, historia distinta), porque GitHub puede haber
+> sincronizado `main`→`develop` por su cuenta entre PRs.
+
 ## Hotfix (bug en main)
 
 ```bash

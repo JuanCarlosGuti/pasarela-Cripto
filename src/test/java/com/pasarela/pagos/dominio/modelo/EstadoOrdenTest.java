@@ -59,6 +59,13 @@ class EstadoOrdenTest {
 	}
 
 	@Test
+	void soloPagoDetectadoConvertidaYLiquidada_sonVentaEfectiva() {
+		// la definición del dashboard (HU-018) y la condición del comprobante (HU-020)
+		assertThat(Arrays.stream(EstadoOrden.values()).filter(EstadoOrden::esVentaEfectiva))
+				.containsExactlyInAnyOrder(PAGO_DETECTADO, CONVERTIDA, LIQUIDADA);
+	}
+
+	@Test
 	void ningunEstado_puedeTransicionarASiMismo() {
 		for (EstadoOrden estado : EstadoOrden.values()) {
 			assertThat(estado.puedeTransicionarA(estado))

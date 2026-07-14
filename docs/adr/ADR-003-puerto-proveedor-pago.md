@@ -13,8 +13,8 @@ negocio si el sistema estuviera acoplado a él.
 
 Definir un **puerto de salida `ProveedorDePagoPort`** en el dominio, que abstrae las
 operaciones de cualquier riel de pago (crear cobro, validar firma de webhook,
-interpretar webhook). Cada proveedor concreto se implementa como un **adaptador** en la
-capa de infraestructura.
+interpretar webhook, consultar el estado de un cobro). Cada proveedor concreto se
+implementa como un **adaptador** en la capa de infraestructura.
 
 El dominio y la aplicación dependen solo del puerto, nunca de un proveedor concreto.
 
@@ -36,3 +36,12 @@ El dominio y la aplicación dependen solo del puerto, nunca de un proveedor conc
 En el MVP se implementa primero un **adaptador simulado** (para desarrollar sin el
 sandbox) y luego el `BinancePayAdapter` real. El adaptador on-chain llega post-MVP como
 una segunda implementación del mismo puerto.
+
+**Evolución del puerto:**
+- **Sprint 4 (HU-010):** el puerto creció con `firmaValida(cargaCruda, firma)` e
+  `interpretarWebhook(cargaCruda)` — la validación y traducción del webhook también
+  quedan detrás del puerto, no solo la creación del cobro.
+- **Sprint 5 (HU-015):** se añadió `consultarCobro(referencia, monto)` para la
+  reconciliación activa (ADR-004): el proveedor reporta el pago en el MISMO formato
+  del webhook (carga + firma), así la reconciliación lo confirma por la ruta
+  idempotente existente, sin duplicar lógica de negocio.
