@@ -93,6 +93,15 @@ public class OrdenDePagoRepositorioJpa implements OrdenDePagoRepositorio {
 	}
 
 	@Override
+	public List<OrdenDePago> listarTodasDelComercio(IdComercio comercioId, Instant desde,
+			Instant hasta) {
+		return jpa.listarTodasDelComercio(comercioId.valor(), desde, hasta)
+				.stream()
+				.map(mapper::aDominio)
+				.toList();
+	}
+
+	@Override
 	public Dinero acumuladoDelMes(IdComercio comercioId, Instant desde, Instant hasta) {
 		return new Dinero(
 				jpa.sumarMontos(comercioId.valor(), desde, hasta, ESTADOS_QUE_CONSUMEN_CUPO),

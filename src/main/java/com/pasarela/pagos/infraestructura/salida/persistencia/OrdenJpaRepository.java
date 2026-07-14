@@ -59,4 +59,15 @@ interface OrdenJpaRepository extends JpaRepository<OrdenJpaEntity, UUID> {
 			@Param("hasta") Instant hasta,
 			org.springframework.data.domain.Pageable paginacion);
 
+	@Query("""
+			select o from OrdenJpaEntity o
+			where o.comercioId = :comercioId
+			  and o.creadaEn >= :desde and o.creadaEn < :hasta
+			order by o.creadaEn asc
+			""")
+	List<OrdenJpaEntity> listarTodasDelComercio(
+			@Param("comercioId") UUID comercioId,
+			@Param("desde") Instant desde,
+			@Param("hasta") Instant hasta);
+
 }
