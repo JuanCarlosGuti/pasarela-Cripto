@@ -374,7 +374,7 @@ a mi contador tal cual.
   UTF-8 — probado abriendo el archivo real).
 - **Dado** un rango sin movimientos, **entonces** archivo válido con solo encabezados.
 
-### 🔵 HU-020 — Comprobante por transacción
+### ✅ HU-020 — Comprobante por transacción
 **Como** Comercio **quiero** un comprobante de cada pago **para** soportar la venta
 ante el cliente y el contador.
 
