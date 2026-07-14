@@ -387,9 +387,15 @@ ante el cliente y el contador.
 
 ## Épica E9 — Binance Pay real *(Sprint 7 / Fase 9)*
 
-### ⬜ HU-021 — Adaptador real de Binance Pay
+### 🔵 HU-021 — Adaptador real de Binance Pay
 **Como** Plataforma **quiero** reemplazar el simulador por el adaptador real de
 Binance Pay **para** procesar pagos verdaderos en sandbox.
+
+> **Avance sin sandbox (mientras se tramita el acceso merchant):** adaptador +
+> firma + suite WireMock construidos contra la especificación pública.
+> **Bloqueado hasta tener credenciales:** re-grabar fixtures contra el sandbox
+> real, pago E2E (QR → app Binance → webhook real), y cerrar la decisión de
+> denominación del cobro (COP directo vs. cripto cotizada).
 
 **Criterios de aceptación:**
 - `BinancePayAdapter` implementa el puerto completo: crear cobro (firma
