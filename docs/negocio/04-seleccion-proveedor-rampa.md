@@ -37,11 +37,12 @@ independientes). ⚠️ = sin verificar. Votación entre paréntesis.
 - **Mural Pay sigue PRINCIPAL**: único donde la REGLA DE ORO encaja de fábrica (los
   fondos viven en la cuenta de la Organization del comercio, jamás de la plataforma).
   Su duda: atribución del pago cripto entrante por orden.
-- **Koywe sube a RESPALDO serio**: es el único con nuestro flujo de cobro exacto
-  confirmado (dirección única por orden) + payout a terceros + sub-merchants API.
-  Su riesgo es espejo del de Mural: los fondos pasan por un saldo virtual **a nombre
-  de la plataforma** → pregunta jurídica decisiva: ¿puede el saldo estar a nombre
-  del sub-comercio?
+- **Koywe: DESCARTADO POR ETAPA (respuesta 2026-07-14)**: su onboarding está
+  orientado a "empresas con operaciones activas y flujos en producción"; invitan
+  a retomar contacto "cuando el proyecto esté más avanzado y tengas volumen
+  operativo real" (Jorge, equipo Koywe). Técnicamente sigue siendo el único con
+  dirección única por orden confirmada → **retomar cuando el piloto genere
+  volumen**. La pregunta del saldo virtual quedó sin responder.
 - **Bitso baja a tercero**: cumple el payout a terceros, pero sus webhooks sin firma
   criptográfica chocan con nuestro requisito de seguridad y su producto stablecoin
   (Juno) no cubre COP.
@@ -124,6 +125,13 @@ bitso.com/business formulario · Koywe → koywe.com "Contact/Sales".
       los dos primeros no responden.
       **Seguimiento:** si no hay respuesta en 4-5 días hábiles (~2026-07-21),
       enviar recordatorio corto respondiendo al mismo hilo.
+- [x] Respuesta de Koywe (2026-07-14): **descartado por etapa** — solo atienden
+      operaciones en producción. Respondido con agradecimiento + pregunta por el
+      umbral de volumen para retomar. Implicación estratégica: el **riel Binance
+      Pay (HU-021) gana valor** como generador del volumen inicial que abre las
+      puertas de estos proveedores (opción híbrida del ADR-006).
+- [ ] **Enviar formulario de Bitso Business YA** (Koywe fuera → Bitso pasa a
+      respaldo activo).
 - [ ] Evaluar respuestas contra §1: la pregunta 1 de cada correo es
       eliminatoria; la cotización todo-en debe llegar **por escrito**.
 - [ ] Actualizar ADR-006 con el proveedor elegido y el mecanismo de comisión.
