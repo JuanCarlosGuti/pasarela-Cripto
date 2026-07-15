@@ -1,0 +1,17 @@
+# Escaneo de dependencias (HU-022): Dependabot abre PRs por vulnerabilidades
+# y versiones nuevas. Las alertas de seguridad llegan aunque no se acepte el
+# bump — el criterio es "sin vulnerabilidades críticas abiertas".
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencias"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencias"]

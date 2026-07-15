@@ -58,11 +58,14 @@ credenciales. Cero cambios en el dominio.
 
 ### Consideraciones
 
-- El saldo pagado cae en la **cuenta merchant de Binance en cripto**; la conversión a
-  COP y la liquidación se resuelven con el proveedor de rampa/flujo definido (detalle a
-  cerrar en la fase de integración). La plataforma **no custodia** esos fondos.
-- Requiere aplicar al **programa de merchants de Binance** (pedirá los datos de la SAS;
-  el **sandbox** está disponible antes del KYB de producción).
+- El saldo pagado cae en la **cuenta merchant de Binance en cripto** (de quien sea el
+  merchant). Por eso Binance Pay es un **riel complementario** para comercios
+  cripto-friendly con cuenta propia — **la promesa "recibe COP" la cumple el proveedor
+  de rampa, no este riel**. El flujo del dinero completo está decidido en **ADR-006**
+  y la selección del proveedor en `docs/negocio/04-seleccion-proveedor-rampa.md`.
+- Requiere aplicar al **programa de merchants de Binance** (pedirá los datos de la SAS).
+  No hay sandbox tradicional: Binance otorga una **trial account** para pruebas
+  mientras el KYB está en curso (solicitarla a soporte de merchants).
 - Credenciales (API key, secret) → **variables de entorno**, nunca en el repo.
 
 ---
