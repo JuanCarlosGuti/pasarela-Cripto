@@ -403,9 +403,15 @@ directo al comercio **para** cumplir la promesa de valor del MVP (ADR-006).
   de la plataforma (REGLA DE ORO).
 - Decisión registrada actualizando ADR-006 (proveedor principal + respaldo).
 
-### ⬜ HU-021 — Adaptador real de Binance Pay
+### 🔵 HU-021 — Adaptador real de Binance Pay
 **Como** Plataforma **quiero** reemplazar el simulador por el adaptador real de
 Binance Pay **para** procesar pagos verdaderos en sandbox.
+
+> **Avance sin sandbox (mientras se tramita el acceso merchant):** adaptador +
+> firma + suite WireMock construidos contra la especificación pública.
+> **Bloqueado hasta tener credenciales:** re-grabar fixtures contra el sandbox
+> real, pago E2E (QR → app Binance → webhook real), y cerrar la decisión de
+> denominación del cobro (COP directo vs. cripto cotizada).
 
 **Criterios de aceptación:**
 - `BinancePayAdapter` implementa el puerto completo: crear cobro (firma

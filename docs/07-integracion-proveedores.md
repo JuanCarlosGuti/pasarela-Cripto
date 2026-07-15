@@ -175,8 +175,15 @@ activar/desactivar un proveedor o cambiar de sandbox a producción sea configura
 código:
 
 ```
-pasarela.proveedores.binance.api-key      = ${BINANCE_API_KEY}
-pasarela.proveedores.binance.secret       = ${BINANCE_SECRET}
-pasarela.proveedores.binance.base-url     = ${BINANCE_BASE_URL}   # sandbox o prod
-pasarela.proveedores.binance.habilitado   = true
+pasarela.proveedores.binance.habilitado            = true
+pasarela.proveedores.binance.base-url              = ${BINANCE_BASE_URL}   # sandbox o prod
+pasarela.proveedores.binance.api-key               = ${BINANCE_API_KEY}
+pasarela.proveedores.binance.secreto               = ${BINANCE_SECRET}
+pasarela.proveedores.binance.clave-publica-webhook = ${BINANCE_WEBHOOK_PUBLIC_KEY}
+pasarela.proveedores.binance.moneda                = COP   # denominación: validar en sandbox
 ```
+
+> Al habilitar Binance, deshabilitar el simulador: solo UN adaptador del puerto
+> activo a la vez (`ProcesarWebhookService` inyecta un único
+> `ProveedorDePagoPort`). El paso a paso completo del día-sandbox está en
+> `docs/09-checklist-sandbox-binance-pay.md`.

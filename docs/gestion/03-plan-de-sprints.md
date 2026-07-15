@@ -183,7 +183,7 @@ maestro (abogado fintech, contratos).
 | 4 — Webhook + idempotencia | ✅ cerrado | `v0.4.0` |
 | 5 — Jobs + liquidación | ✅ cerrado | `v0.5.0` |
 | 6 — Dashboard | ✅ cerrado | `v0.6.0` |
-| 7 — Binance real | ⬜ pendiente | — |
+| 7 — Binance real | 🔵 en curso | — |
 | 8 — Piloto | ⬜ pendiente | — |
 
 > Actualizar esta tabla al abrir/cerrar cada sprint (commit `docs(gestion)`).
