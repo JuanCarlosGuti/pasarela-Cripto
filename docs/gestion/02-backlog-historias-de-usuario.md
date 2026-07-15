@@ -418,7 +418,11 @@ Binance Pay **para** procesar pagos verdaderos en sandbox.
 - Credenciales solo por variables de entorno; los tests no contienen secretos
   reales.
 
-### ⬜ HU-022 — Endurecimiento pre-producción
+### 🔵 HU-022 — Endurecimiento pre-producción
+
+> **Avance sin sandbox:** rate limiting + escaneo de dependencias + gitleaks +
+> headers, todo verificable localmente. **Bloqueado hasta tener proveedor
+> real:** re-verificación E2E de los caminos tristes de HU-012 contra sandbox.
 **Como** Plataforma **quiero** rate limiting, auditoría y revisión de seguridad
 **para** exponer el sistema a internet con riesgo controlado.
 
