@@ -55,6 +55,9 @@ public class ConfiguracionDeSeguridadHttp {
 						// contrato OpenAPI para el frontend Angular (HU-009)
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")
+						// cola de verificación del admin (HU-026): solo la colección;
+						// GET /api/comercios/{id} sigue autenticado con aislamiento propio
+						.requestMatchers(HttpMethod.GET, "/api/comercios").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/comercios/*/limites").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/ordenes").hasRole("COMERCIO")
 						// dashboard del comercio (HU-018): el comercio sale del token

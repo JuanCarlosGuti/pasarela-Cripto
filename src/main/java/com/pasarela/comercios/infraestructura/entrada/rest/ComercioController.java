@@ -5,6 +5,7 @@ import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.ActualizarLimitesUseCase.ComandoActualizarLimites;
 import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComercioUseCase.ComandoConsultarComercio;
+import com.pasarela.comercios.dominio.puerto.entrada.ConsultarComerciosUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase;
 import com.pasarela.comercios.dominio.puerto.entrada.DecidirVerificacionUseCase.ComandoDecisionVerificacion;
 import com.pasarela.comercios.dominio.puerto.entrada.RegistrarComercioUseCase;
@@ -19,9 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,15 +34,18 @@ public class ComercioController {
 	private final RegistrarComercioUseCase registrarComercio;
 	private final DecidirVerificacionUseCase decidirVerificacion;
 	private final ConsultarComercioUseCase consultarComercio;
+	private final ConsultarComerciosUseCase consultarComercios;
 	private final ActualizarLimitesUseCase actualizarLimites;
 
 	public ComercioController(RegistrarComercioUseCase registrarComercio,
 			DecidirVerificacionUseCase decidirVerificacion,
 			ConsultarComercioUseCase consultarComercio,
+			ConsultarComerciosUseCase consultarComercios,
 			ActualizarLimitesUseCase actualizarLimites) {
 		this.registrarComercio = registrarComercio;
 		this.decidirVerificacion = decidirVerificacion;
 		this.consultarComercio = consultarComercio;
+		this.consultarComercios = consultarComercios;
 		this.actualizarLimites = actualizarLimites;
 	}
 
@@ -59,6 +65,17 @@ public class ComercioController {
 				.created(uri.path("/api/comercios/{id}")
 						.buildAndExpand(comercio.id().valor()).toUri())
 				.body(ComercioResponse.de(comercio));
+	}
+
+	/**
+	 * Cola de verificación del Admin (HU-026): todos los comercios o solo
+	 * los de un estado (?estado=PENDIENTE). Solo rol ADMIN (ver
+	 * ConfiguracionDeSeguridadHttp); un estado inexistente responde 400.
+	 */
+	@GetMapping
+	public List<ComercioResponse> listar(
+			@RequestParam(required = false) String estado) {
+		return consultarComercios.listar(estado).stream().map(ComercioResponse::de).toList();
 	}
 
 	/**
