@@ -104,7 +104,8 @@ public class LiquidacionController {
 			long montoNetoComercio,
 			String referenciaProveedor,
 			String estado,
-			String detalleDiscrepancia) {
+			String detalleDiscrepancia,
+			java.time.Instant liquidadaEn) {
 
 		static LiquidacionResponse de(Liquidacion liquidacion) {
 			return new LiquidacionResponse(
@@ -120,7 +121,8 @@ public class LiquidacionController {
 					liquidacion.montoNetoComercio().monto().longValue(),
 					liquidacion.referenciaProveedor(),
 					liquidacion.estado().name(),
-					liquidacion.detalleDiscrepancia());
+					liquidacion.detalleDiscrepancia(),
+					liquidacion.liquidadaEn());
 		}
 	}
 
