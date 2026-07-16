@@ -18,10 +18,11 @@ import java.util.Set;
  * proveedor liquidó COP al comercio por un grupo de órdenes. La plataforma
  * NO mueve el dinero; solo lo registra y concilia (REGLA DE ORO).
  *
- * <p>Invariantes del dinero (HU-016): {@code bruto = Σ órdenes} y
- * {@code neto = bruto − comisión}, al centavo. El neto se define POR
- * DIFERENCIA: comisión + neto suman exactamente el bruto, siempre. La
- * rehidratación re-verifica la suma: montos que no cuadran jamás entran.</p>
+ * <p>Invariantes del dinero (HU-016, ampliado en HU-025): {@code bruto =
+ * Σ órdenes} y {@code neto = bruto − comisiónPlataforma − comisiónRampa}, al
+ * centavo. El neto se define POR DIFERENCIA: comisiónPlataforma +
+ * comisiónRampa + neto suman exactamente el bruto, siempre. La rehidratación
+ * re-verifica la suma: montos que no cuadran jamás entran.</p>
  */
 public class Liquidacion {
 
@@ -32,13 +33,15 @@ public class Liquidacion {
 	private final Dinero comisionPlataforma;
 	private final Dinero montoNetoComercio;
 	private final String referenciaProveedor;
+	private final DetalleRampa detalleRampa;
 	private final Instant liquidadaEn;
 	private EstadoLiquidacion estado;
 	private String detalleDiscrepancia;
 
 	private Liquidacion(IdLiquidacion id, IdComercio comercioId, List<IdOrden> ordenes,
 			Dinero montoBruto, Dinero comisionPlataforma, Dinero montoNetoComercio,
-			String referenciaProveedor, Instant liquidadaEn, EstadoLiquidacion estado) {
+			String referenciaProveedor, DetalleRampa detalleRampa, Instant liquidadaEn,
+			EstadoLiquidacion estado) {
 		this.id = id;
 		this.comercioId = comercioId;
 		this.ordenes = List.copyOf(ordenes);
@@ -46,14 +49,17 @@ public class Liquidacion {
 		this.comisionPlataforma = comisionPlataforma;
 		this.montoNetoComercio = montoNetoComercio;
 		this.referenciaProveedor = referenciaProveedor;
+		this.detalleRampa = detalleRampa;
 		this.liquidadaEn = liquidadaEn;
 		this.estado = estado;
 	}
 
 	public static Liquidacion registrar(IdComercio comercioId, List<OrdenLiquidable> ordenes,
-			Porcentaje tasaComision, String referenciaProveedor, Instant ahora) {
+			Porcentaje tasaComision, String referenciaProveedor, DetalleRampa detalleRampa,
+			Instant ahora) {
 		validarObligatorio(comercioId, "el comercio");
 		validarObligatorio(tasaComision, "la tasa de comisión");
+		validarObligatorio(detalleRampa, "el detalle de la rampa");
 		validarObligatorio(ahora, "la fecha de liquidación");
 		if (referenciaProveedor == null || referenciaProveedor.isBlank()) {
 			throw new LiquidacionInvalidaException(
@@ -74,10 +80,10 @@ public class Liquidacion {
 		Dinero bruto = ordenes.stream().map(OrdenLiquidable::monto)
 				.reduce(Dinero.cop(0), Dinero::sumar);
 		Dinero comision = bruto.porcentaje(tasaComision);
-		Dinero neto = bruto.restar(comision);
+		Dinero neto = bruto.restar(comision).restar(detalleRampa.comisionRampa());
 		return new Liquidacion(IdLiquidacion.generar(), comercioId,
 				ordenes.stream().map(OrdenLiquidable::id).toList(),
-				bruto, comision, neto, referenciaProveedor.trim(), ahora,
+				bruto, comision, neto, referenciaProveedor.trim(), detalleRampa, ahora,
 				EstadoLiquidacion.REGISTRADA);
 	}
 
@@ -127,25 +133,29 @@ public class Liquidacion {
 	/** Rehidratación desde persistencia; re-verifica que el dinero cuadre. */
 	public static Liquidacion reconstituir(IdLiquidacion id, IdComercio comercioId,
 			List<IdOrden> ordenes, Dinero montoBruto, Dinero comisionPlataforma,
-			Dinero montoNetoComercio, String referenciaProveedor,
+			Dinero montoNetoComercio, String referenciaProveedor, DetalleRampa detalleRampa,
 			EstadoLiquidacion estado, Instant liquidadaEn, String detalleDiscrepancia) {
 		validarObligatorio(id, "el id");
 		validarObligatorio(comercioId, "el comercio");
+		validarObligatorio(detalleRampa, "el detalle de la rampa");
 		validarObligatorio(estado, "el estado");
 		validarObligatorio(liquidadaEn, "la fecha de liquidación");
 		if (ordenes == null || ordenes.isEmpty()) {
 			throw new LiquidacionInvalidaException(
 					"La liquidación requiere al menos una orden");
 		}
-		if (!comisionPlataforma.sumar(montoNetoComercio).equals(montoBruto)) {
+		if (!comisionPlataforma.sumar(detalleRampa.comisionRampa()).sumar(montoNetoComercio)
+				.equals(montoBruto)) {
 			throw new LiquidacionInvalidaException(
-					"Los montos de la liquidación no cuadran: %s + %s ≠ %s".formatted(
+					"Los montos de la liquidación no cuadran: %s + %s + %s ≠ %s".formatted(
 							comisionPlataforma.monto().toPlainString(),
+							detalleRampa.comisionRampa().monto().toPlainString(),
 							montoNetoComercio.monto().toPlainString(),
 							montoBruto.monto().toPlainString()));
 		}
 		Liquidacion liquidacion = new Liquidacion(id, comercioId, ordenes, montoBruto,
-				comisionPlataforma, montoNetoComercio, referenciaProveedor, liquidadaEn, estado);
+				comisionPlataforma, montoNetoComercio, referenciaProveedor, detalleRampa,
+				liquidadaEn, estado);
 		liquidacion.detalleDiscrepancia = detalleDiscrepancia;
 		return liquidacion;
 	}
@@ -183,6 +193,10 @@ public class Liquidacion {
 
 	public String referenciaProveedor() {
 		return referenciaProveedor;
+	}
+
+	public DetalleRampa detalleRampa() {
+		return detalleRampa;
 	}
 
 	public EstadoLiquidacion estado() {

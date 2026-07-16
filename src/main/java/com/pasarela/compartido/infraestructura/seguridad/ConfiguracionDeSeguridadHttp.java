@@ -61,6 +61,8 @@ public class ConfiguracionDeSeguridadHttp {
 						.requestMatchers("/api/ventas/**").hasRole("COMERCIO")
 						.requestMatchers(HttpMethod.POST, "/api/liquidaciones").hasRole("ADMIN")
 						.requestMatchers("/api/liquidaciones/*/conciliacion").hasRole("ADMIN")
+						// el comercio ve SUS liquidaciones (HU-025): sale del token
+						.requestMatchers(HttpMethod.GET, "/api/liquidaciones").hasRole("COMERCIO")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 						jwt.jwtAuthenticationConverter(convertidorDeRoles())));

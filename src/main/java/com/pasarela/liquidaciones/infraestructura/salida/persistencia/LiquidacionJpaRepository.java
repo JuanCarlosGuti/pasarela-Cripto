@@ -14,4 +14,6 @@ interface LiquidacionJpaRepository extends JpaRepository<LiquidacionJpaEntity, U
 			nativeQuery = true)
 	List<UUID> ordenesYaLiquidadas(@Param("ordenes") Collection<UUID> ordenes);
 
+	List<LiquidacionJpaEntity> findByComercioIdOrderByLiquidadaEnDesc(UUID comercioId);
+
 }

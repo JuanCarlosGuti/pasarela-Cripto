@@ -1,5 +1,6 @@
 package com.pasarela.liquidaciones.dominio.puerto.salida;
 
+import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.liquidaciones.dominio.modelo.IdLiquidacion;
 import com.pasarela.liquidaciones.dominio.modelo.Liquidacion;
@@ -23,5 +24,8 @@ public interface LiquidacionRepositorio {
 
 	/** Pre-chequeo amable; la constraint en BD es la última defensa. */
 	List<IdOrden> ordenesYaLiquidadas(List<IdOrden> ordenes);
+
+	/** Las liquidaciones del comercio, más recientes primero (HU-025). */
+	List<Liquidacion> listarPorComercio(IdComercio comercioId);
 
 }
