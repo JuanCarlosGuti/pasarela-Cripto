@@ -4,6 +4,7 @@ import com.pasarela.compartido.dominio.modelo.Dinero;
 import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.compartido.dominio.modelo.Moneda;
+import com.pasarela.liquidaciones.dominio.modelo.DetalleRampa;
 import com.pasarela.liquidaciones.dominio.modelo.EstadoLiquidacion;
 import com.pasarela.liquidaciones.dominio.modelo.IdLiquidacion;
 import com.pasarela.liquidaciones.dominio.modelo.Liquidacion;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class LiquidacionJpaMapper {
 
 	LiquidacionJpaEntity aEntidad(Liquidacion liquidacion) {
+		DetalleRampa rampa = liquidacion.detalleRampa();
 		return new LiquidacionJpaEntity(
 				liquidacion.id().valor(),
 				liquidacion.comercioId().valor(),
@@ -21,6 +23,9 @@ public class LiquidacionJpaMapper {
 				liquidacion.comisionPlataforma().monto(),
 				liquidacion.montoNetoComercio().monto(),
 				liquidacion.referenciaProveedor(),
+				rampa.comisionRampa().monto(),
+				rampa.tasaCambioSimulada(),
+				rampa.cuentaDestinoDescripcion(),
 				liquidacion.estado().name(),
 				liquidacion.liquidadaEn(),
 				liquidacion.ordenes().stream().map(IdOrden::valor).toList(),
@@ -28,6 +33,10 @@ public class LiquidacionJpaMapper {
 	}
 
 	Liquidacion aDominio(LiquidacionJpaEntity entidad) {
+		DetalleRampa rampa = new DetalleRampa(
+				new Dinero(entidad.comisionRampa(), Moneda.COP),
+				entidad.tasaCambioSimulada(),
+				entidad.cuentaDestinoDescripcion());
 		return Liquidacion.reconstituir(
 				IdLiquidacion.de(entidad.id()),
 				IdComercio.de(entidad.comercioId()),
@@ -36,6 +45,7 @@ public class LiquidacionJpaMapper {
 				new Dinero(entidad.comisionPlataforma(), Moneda.COP),
 				new Dinero(entidad.montoNetoComercio(), Moneda.COP),
 				entidad.referenciaProveedor(),
+				rampa,
 				EstadoLiquidacion.valueOf(entidad.estado()),
 				entidad.liquidadaEn(),
 				entidad.detalleDiscrepancia());

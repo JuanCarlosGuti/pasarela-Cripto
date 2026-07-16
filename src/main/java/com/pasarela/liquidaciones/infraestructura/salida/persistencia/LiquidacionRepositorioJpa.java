@@ -1,5 +1,6 @@
 package com.pasarela.liquidaciones.infraestructura.salida.persistencia;
 
+import com.pasarela.compartido.dominio.modelo.IdComercio;
 import com.pasarela.compartido.dominio.modelo.IdOrden;
 import com.pasarela.liquidaciones.dominio.excepcion.OrdenYaLiquidadaException;
 import com.pasarela.liquidaciones.dominio.modelo.IdLiquidacion;
@@ -46,6 +47,12 @@ public class LiquidacionRepositorioJpa implements LiquidacionRepositorio {
 	public List<IdOrden> ordenesYaLiquidadas(List<IdOrden> ordenes) {
 		return jpa.ordenesYaLiquidadas(ordenes.stream().map(IdOrden::valor).toList())
 				.stream().map(IdOrden::de).toList();
+	}
+
+	@Override
+	public List<Liquidacion> listarPorComercio(IdComercio comercioId) {
+		return jpa.findByComercioIdOrderByLiquidadaEnDesc(comercioId.valor())
+				.stream().map(mapper::aDominio).toList();
 	}
 
 }

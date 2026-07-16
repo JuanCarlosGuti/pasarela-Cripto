@@ -74,6 +74,15 @@ credenciales. Cero cambios en el dominio.
 
 > No es parte del MVP. Se documenta para diseñar el puerto de forma compatible.
 
+**Simulación para demo (HU-025):** mientras T-007 no cierre con un proveedor
+contratado, `ProveedorDeRampaPort` (contexto `liquidaciones`) tiene un
+adaptador `ProveedorDeRampaSimulado` — mismo patrón que el simulador de
+pagos: tasa de cambio y comisión configurables, referencia con formato
+realista, lee la cuenta de liquidación del comercio. Sirve **solo** para
+mostrar el flujo completo (conversión + desglose) a interesados; no habla
+con ningún proveedor real ni mueve un centavo. Reemplazar por el adaptador
+real es un adaptador nuevo del mismo puerto, cero cambios en dominio.
+
 Para wallets que no son Binance (MetaMask, Trust, etc.), el pago es una transferencia
 blockchain. El camino recomendado (sin custodia):
 
