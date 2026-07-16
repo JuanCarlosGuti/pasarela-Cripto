@@ -468,6 +468,17 @@ promesa de valor del negocio sin esperar a T-007.
   desglose completo (rol COMERCIO, aislado por comercio — el admin sigue
   siendo quien registra/concilia).
 
+### ✅ HU-026 — Cola de verificación del Admin (listado de comercios)
+
+**Como** Admin **quiero** listar los comercios (todos o por estado) **para**
+trabajar la cola de verificación desde el panel (soporte de HUF-012 del front).
+
+**Criterios de aceptación:**
+- `GET /api/comercios` (solo rol ADMIN) devuelve todos los comercios, más
+  recientes primero; `?estado=PENDIENTE` filtra por estado.
+- Un estado inexistente responde 400 con mensaje; rol COMERCIO recibe 403;
+  sin token, 401. `GET /api/comercios/{id}` conserva su aislamiento (HU-006).
+
 ---
 
 ## Épica E10 — Piloto *(Sprint 8 / Fase 10)*
@@ -506,7 +517,7 @@ de un problema antes que el comercio.
 | 4 | Fase 5 | HU-010, HU-011, HU-012, HU-013 |
 | 5 | Fases 6-7 | HU-014, HU-015, HU-016, HU-017 |
 | 6 | Fase 8 | HU-018, HU-019, HU-020 |
-| 7 | Fase 9 | T-007, HU-021, HU-022, HU-025 |
+| 7 | Fase 9 | T-007, HU-021, HU-022, HU-025, HU-026 |
 | 8 | Fase 10 | HU-023, HU-024 |
 
 > **Cómo usar este backlog:** al iniciar una historia, cambiar ⬜ → 🔵 y crear la rama

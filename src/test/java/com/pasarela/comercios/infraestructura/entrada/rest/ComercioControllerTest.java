@@ -66,6 +66,9 @@ class ComercioControllerTest {
 	private ConsultarComercioUseCase consultarComercio;
 
 	@MockitoBean
+	private com.pasarela.comercios.dominio.puerto.entrada.ConsultarComerciosUseCase consultarComercios;
+
+	@MockitoBean
 	private ActualizarLimitesUseCase actualizarLimites;
 
 	@Test
