@@ -66,18 +66,26 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + tokenDeAdmin())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s", "%s", "%s"], "referenciaProveedor": "liq-prov-e2e-1"}
+								{"comercioId": "%s", "ordenes": ["%s", "%s", "%s"]}
 								""".formatted(comercio.id(), orden1, orden2, orden3)))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.montoBruto").value(99999))
 				.andExpect(jsonPath("$.comisionPlataforma").value(2500))
-				.andExpect(jsonPath("$.montoNetoComercio").value(97499))
+				// rampa simulada (HU-025): 0.8% de 99.999 = 799,992 → redondeo a 800
+				.andExpect(jsonPath("$.comisionRampa").value(800))
+				.andExpect(jsonPath("$.tasaCambioSimulada").value(4150))
+				.andExpect(jsonPath("$.cuentaDestinoDescripcion").value(
+						org.hamcrest.Matchers.containsString("NEQUI")))
+				.andExpect(jsonPath("$.referenciaProveedor").value(
+						org.hamcrest.Matchers.startsWith("RAMPA-SIM-")))
+				.andExpect(jsonPath("$.montoNetoComercio").value(96699))
 				.andExpect(jsonPath("$.estado").value("REGISTRADA"))
 				.andReturn();
 
-		// comisión + neto = bruto, al centavo
+		// comisión plataforma + comisión rampa + neto = bruto, al centavo
 		var cuerpo = json.readTree(respuesta.getResponse().getContentAsString());
 		assertThat(cuerpo.get("comisionPlataforma").asLong()
+				+ cuerpo.get("comisionRampa").asLong()
 				+ cuerpo.get("montoNetoComercio").asLong())
 				.isEqualTo(cuerpo.get("montoBruto").asLong());
 
@@ -91,9 +99,42 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + tokenDeAdmin())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s"], "referenciaProveedor": "liq-prov-e2e-2"}
+								{"comercioId": "%s", "ordenes": ["%s"]}
 								""".formatted(comercio.id(), orden1)))
 				.andExpect(status().isConflict());
+	}
+
+	@Test
+	void elComercio_veSusPropiasLiquidaciones_conElDesgloseDeLaRampa() throws Exception {
+		Comercio comercio = comercioVerificado("900373115-3", "vetodo@liquidaciones.co");
+		Comercio otro = comercioVerificado("901313864-9", "otro@liquidaciones.co");
+		String orden1 = ordenConvertida(comercio, 25000, "evt-get-1");
+
+		mvc.perform(post("/api/liquidaciones")
+						.header("Authorization", "Bearer " + tokenDeAdmin())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"comercioId": "%s", "ordenes": ["%s"]}
+								""".formatted(comercio.id(), orden1)))
+				.andExpect(status().isCreated());
+
+		mvc.perform(get("/api/liquidaciones")
+						.header("Authorization", "Bearer " + comercio.token()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+				.andExpect(jsonPath("$[0].montoBruto").value(25000))
+				.andExpect(jsonPath("$[0].comisionRampa").value(200));
+
+		// aislamiento: otro comercio no ve liquidaciones ajenas
+		mvc.perform(get("/api/liquidaciones")
+						.header("Authorization", "Bearer " + otro.token()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(0)));
+
+		// el admin no consulta por esta vía (es del comercio, sale del token)
+		mvc.perform(get("/api/liquidaciones")
+						.header("Authorization", "Bearer " + tokenDeAdmin()))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -106,7 +147,7 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + tokenDeAdmin())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s", "%s"], "referenciaProveedor": "liq-conc-1"}
+								{"comercioId": "%s", "ordenes": ["%s", "%s"]}
 								""".formatted(comercio.id(), orden1, orden2)))
 				.andExpect(status().isCreated()).andReturn();
 		String liq1 = json.readTree(creada.getResponse().getContentAsString())
@@ -138,7 +179,7 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + tokenDeAdmin())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s"], "referenciaProveedor": "liq-conc-2"}
+								{"comercioId": "%s", "ordenes": ["%s"]}
 								""".formatted(comercio.id(), orden3)))
 				.andExpect(status().isCreated()).andReturn();
 		String liq2 = json.readTree(creada2.getResponse().getContentAsString())
@@ -169,7 +210,7 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + tokenDeAdmin())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s"], "referenciaProveedor": "liq-prov-e2e-3"}
+								{"comercioId": "%s", "ordenes": ["%s"]}
 								""".formatted(comercio.id(), pendiente)))
 				.andExpect(status().isUnprocessableEntity())
 				.andExpect(jsonPath("$.mensaje").value(
@@ -184,7 +225,7 @@ class LiquidacionesApiTest {
 						.header("Authorization", "Bearer " + comercio.token())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{"comercioId": "%s", "ordenes": ["%s"], "referenciaProveedor": "x"}
+								{"comercioId": "%s", "ordenes": ["%s"]}
 								""".formatted(comercio.id(), UUID.randomUUID())))
 				.andExpect(status().isForbidden());
 	}

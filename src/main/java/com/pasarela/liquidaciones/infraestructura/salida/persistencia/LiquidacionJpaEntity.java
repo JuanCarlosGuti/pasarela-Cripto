@@ -38,6 +38,15 @@ public class LiquidacionJpaEntity {
 	@Column(name = "referencia_proveedor", nullable = false, length = 100)
 	private String referenciaProveedor;
 
+	@Column(name = "comision_rampa", nullable = false, precision = 19, scale = 4)
+	private BigDecimal comisionRampa;
+
+	@Column(name = "tasa_cambio_simulada", nullable = false, precision = 19, scale = 4)
+	private BigDecimal tasaCambioSimulada;
+
+	@Column(name = "cuenta_destino_descripcion", nullable = false, length = 200)
+	private String cuentaDestinoDescripcion;
+
 	@Column(nullable = false, length = 20)
 	private String estado;
 
@@ -59,7 +68,8 @@ public class LiquidacionJpaEntity {
 
 	LiquidacionJpaEntity(UUID id, UUID comercioId, BigDecimal montoBruto,
 			BigDecimal comisionPlataforma, BigDecimal montoNetoComercio,
-			String referenciaProveedor, String estado, Instant liquidadaEn,
+			String referenciaProveedor, BigDecimal comisionRampa, BigDecimal tasaCambioSimulada,
+			String cuentaDestinoDescripcion, String estado, Instant liquidadaEn,
 			List<UUID> ordenes, String detalleDiscrepancia) {
 		this.id = id;
 		this.comercioId = comercioId;
@@ -67,6 +77,9 @@ public class LiquidacionJpaEntity {
 		this.comisionPlataforma = comisionPlataforma;
 		this.montoNetoComercio = montoNetoComercio;
 		this.referenciaProveedor = referenciaProveedor;
+		this.comisionRampa = comisionRampa;
+		this.tasaCambioSimulada = tasaCambioSimulada;
+		this.cuentaDestinoDescripcion = cuentaDestinoDescripcion;
 		this.estado = estado;
 		this.liquidadaEn = liquidadaEn;
 		this.ordenes = ordenes;
@@ -95,6 +108,18 @@ public class LiquidacionJpaEntity {
 
 	String referenciaProveedor() {
 		return referenciaProveedor;
+	}
+
+	BigDecimal comisionRampa() {
+		return comisionRampa;
+	}
+
+	BigDecimal tasaCambioSimulada() {
+		return tasaCambioSimulada;
+	}
+
+	String cuentaDestinoDescripcion() {
+		return cuentaDestinoDescripcion;
 	}
 
 	String estado() {

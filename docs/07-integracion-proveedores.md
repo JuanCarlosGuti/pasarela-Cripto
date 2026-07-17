@@ -74,6 +74,15 @@ credenciales. Cero cambios en el dominio.
 
 > No es parte del MVP. Se documenta para diseñar el puerto de forma compatible.
 
+**Simulación para demo (HU-025):** mientras T-007 no cierre con un proveedor
+contratado, `ProveedorDeRampaPort` (contexto `liquidaciones`) tiene un
+adaptador `ProveedorDeRampaSimulado` — mismo patrón que el simulador de
+pagos: tasa de cambio y comisión configurables, referencia con formato
+realista, lee la cuenta de liquidación del comercio. Sirve **solo** para
+mostrar el flujo completo (conversión + desglose) a interesados; no habla
+con ningún proveedor real ni mueve un centavo. Reemplazar por el adaptador
+real es un adaptador nuevo del mismo puerto, cero cambios en dominio.
+
 Para wallets que no son Binance (MetaMask, Trust, etc.), el pago es una transferencia
 blockchain. El camino recomendado (sin custodia):
 
@@ -175,8 +184,15 @@ activar/desactivar un proveedor o cambiar de sandbox a producción sea configura
 código:
 
 ```
-pasarela.proveedores.binance.api-key      = ${BINANCE_API_KEY}
-pasarela.proveedores.binance.secret       = ${BINANCE_SECRET}
-pasarela.proveedores.binance.base-url     = ${BINANCE_BASE_URL}   # sandbox o prod
-pasarela.proveedores.binance.habilitado   = true
+pasarela.proveedores.binance.habilitado            = true
+pasarela.proveedores.binance.base-url              = ${BINANCE_BASE_URL}   # sandbox o prod
+pasarela.proveedores.binance.api-key               = ${BINANCE_API_KEY}
+pasarela.proveedores.binance.secreto               = ${BINANCE_SECRET}
+pasarela.proveedores.binance.clave-publica-webhook = ${BINANCE_WEBHOOK_PUBLIC_KEY}
+pasarela.proveedores.binance.moneda                = COP   # denominación: validar en sandbox
 ```
+
+> Al habilitar Binance, deshabilitar el simulador: solo UN adaptador del puerto
+> activo a la vez (`ProcesarWebhookService` inyecta un único
+> `ProveedorDePagoPort`). El paso a paso completo del día-sandbox está en
+> `docs/09-checklist-sandbox-binance-pay.md`.

@@ -55,12 +55,17 @@ public class ConfiguracionDeSeguridadHttp {
 						// contrato OpenAPI para el frontend Angular (HU-009)
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 						.requestMatchers("/api/comercios/*/verificacion").hasRole("ADMIN")
+						// cola de verificación del admin (HU-026): solo la colección;
+						// GET /api/comercios/{id} sigue autenticado con aislamiento propio
+						.requestMatchers(HttpMethod.GET, "/api/comercios").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/comercios/*/limites").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/api/ordenes").hasRole("COMERCIO")
 						// dashboard del comercio (HU-018): el comercio sale del token
 						.requestMatchers("/api/ventas/**").hasRole("COMERCIO")
 						.requestMatchers(HttpMethod.POST, "/api/liquidaciones").hasRole("ADMIN")
 						.requestMatchers("/api/liquidaciones/*/conciliacion").hasRole("ADMIN")
+						// el comercio ve SUS liquidaciones (HU-025): sale del token
+						.requestMatchers(HttpMethod.GET, "/api/liquidaciones").hasRole("COMERCIO")
 						.anyRequest().authenticated())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
 						jwt.jwtAuthenticationConverter(convertidorDeRoles())));

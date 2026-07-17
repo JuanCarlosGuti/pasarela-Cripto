@@ -167,6 +167,7 @@ CREADA → PENDIENTE_PAGO → PAGO_DETECTADO → CONVERTIDA → LIQUIDADA
 | Estrategia de pruebas | `docs/06-estrategia-de-pruebas.md` |
 | Integración de proveedores | `docs/07-integracion-proveedores.md` |
 | Roadmap de desarrollo (fases 0-10) | `docs/08-roadmap-desarrollo.md` |
+| Checklist del sandbox de Binance Pay | `docs/09-checklist-sandbox-binance-pay.md` |
 | Decisiones de arquitectura | `docs/adr/` |
 | Documentos de negocio | `docs/negocio/` |
 | **Flujo de trabajo Git (GitFlow simplificado)** | `docs/gestion/01-flujo-de-trabajo-git.md` |
@@ -208,5 +209,7 @@ Ante cualquier duda de diseño, **consulta primero estos documentos** antes de a
 
 Backlog y estado de sprints al detalle: `docs/gestion/02` y `docs/gestion/03`.
 
-**MVP con un solo riel: Binance Pay.** El riel on-chain (USDT/USDC vía rampa) y la
-liquidación vía Bre-B vienen después, como nuevos adaptadores del mismo puerto.
+**El riel principal del piloto es el proveedor de rampa** (ADR-006): recibe la
+cripto del pagador, convierte y liquida COP directo al comercio. Binance Pay quedó
+como riel complementario (comercios cripto-friendly con cuenta propia). Mientras
+T-007 no cierre proveedor, la rampa está SIMULADA (HU-025) solo para demo.

@@ -403,9 +403,15 @@ directo al comercio **para** cumplir la promesa de valor del MVP (ADR-006).
   de la plataforma (REGLA DE ORO).
 - Decisión registrada actualizando ADR-006 (proveedor principal + respaldo).
 
-### ⬜ HU-021 — Adaptador real de Binance Pay
+### 🔵 HU-021 — Adaptador real de Binance Pay
 **Como** Plataforma **quiero** reemplazar el simulador por el adaptador real de
 Binance Pay **para** procesar pagos verdaderos en sandbox.
+
+> **Avance sin sandbox (mientras se tramita el acceso merchant):** adaptador +
+> firma + suite WireMock construidos contra la especificación pública.
+> **Bloqueado hasta tener credenciales:** re-grabar fixtures contra el sandbox
+> real, pago E2E (QR → app Binance → webhook real), y cerrar la decisión de
+> denominación del cobro (COP directo vs. cripto cotizada).
 
 **Criterios de aceptación:**
 - `BinancePayAdapter` implementa el puerto completo: crear cobro (firma
@@ -433,6 +439,45 @@ Binance Pay **para** procesar pagos verdaderos en sandbox.
 - Escaneo de dependencias (OWASP/Dependabot) sin vulnerabilidades críticas abiertas.
 - Checklist de seguridad: sin secretos en el repo (verificado con gitleaks), sin
   datos sensibles en logs, headers de seguridad correctos.
+
+### ✅ HU-025 — Simulación realista de la rampa (demo)
+
+> **SOLO SIMULACIÓN — no toca dinero real, no habla con ningún proveedor
+> real.** Mientras T-007 no cierre con un proveedor contratado, esto existe
+> para poder mostrar el flujo completo (cripto → conversión → COP en la
+> cuenta del comercio) a interesados/inversionistas. **Reemplazar** por el
+> adaptador real cuando haya proveedor: mismo puerto, cero cambios en
+> dominio y aplicación (ADR-003) — ver `ProveedorDeRampaPort`.
+
+**Como** Plataforma **quiero** que la liquidación simule una conversión de
+verdad (tasa, comisión de rampa, cuenta destino) **para** poder demostrar la
+promesa de valor del negocio sin esperar a T-007.
+
+**Criterios de aceptación:**
+- `ProveedorDeRampaPort` (mismo patrón hexagonal que `ProveedorDePagoPort`) +
+  adaptador `ProveedorDeRampaSimulado`: tasa de cambio y comisión de rampa
+  configurables (no aleatorias — reproducibles en pruebas).
+- La liquidación ya no recibe una referencia de proveedor escrita a mano por
+  el admin: la arma el simulador automáticamente.
+- El dinero sigue cuadrando al centavo: `comisionPlataforma + comisionRampa +
+  neto = bruto`, siempre (invariante ampliado de HU-016).
+- La cuenta de liquidación del comercio (NEQUI/banco, capturada en el
+  registro pero nunca usada hasta ahora) por fin se lee y se refleja en la
+  liquidación.
+- Nuevo `GET /api/liquidaciones`: el comercio ve SUS liquidaciones con el
+  desglose completo (rol COMERCIO, aislado por comercio — el admin sigue
+  siendo quien registra/concilia).
+
+### ✅ HU-026 — Cola de verificación del Admin (listado de comercios)
+
+**Como** Admin **quiero** listar los comercios (todos o por estado) **para**
+trabajar la cola de verificación desde el panel (soporte de HUF-012 del front).
+
+**Criterios de aceptación:**
+- `GET /api/comercios` (solo rol ADMIN) devuelve todos los comercios, más
+  recientes primero; `?estado=PENDIENTE` filtra por estado.
+- Un estado inexistente responde 400 con mensaje; rol COMERCIO recibe 403;
+  sin token, 401. `GET /api/comercios/{id}` conserva su aislamiento (HU-006).
 
 ---
 
@@ -472,7 +517,7 @@ de un problema antes que el comercio.
 | 4 | Fase 5 | HU-010, HU-011, HU-012, HU-013 |
 | 5 | Fases 6-7 | HU-014, HU-015, HU-016, HU-017 |
 | 6 | Fase 8 | HU-018, HU-019, HU-020 |
-| 7 | Fase 9 | T-007, HU-021, HU-022 |
+| 7 | Fase 9 | T-007, HU-021, HU-022, HU-025, HU-026 |
 | 8 | Fase 10 | HU-023, HU-024 |
 
 > **Cómo usar este backlog:** al iniciar una historia, cambiar ⬜ → 🔵 y crear la rama

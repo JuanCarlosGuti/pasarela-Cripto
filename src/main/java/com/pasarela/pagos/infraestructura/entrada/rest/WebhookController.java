@@ -30,10 +30,30 @@ public class WebhookController {
 	public WebhookResponse recibir(
 			@PathVariable String proveedor,
 			@RequestHeader(name = "X-Firma", required = false) String firma,
+			@RequestHeader(name = "BinancePay-Timestamp", required = false) String timestampBinance,
+			@RequestHeader(name = "BinancePay-Nonce", required = false) String nonceBinance,
+			@RequestHeader(name = "BinancePay-Signature", required = false) String firmaBinance,
 			@RequestBody String cargaCruda) {
-		ResultadoWebhook resultado = procesarWebhook.procesar(
-				new ComandoProcesarWebhook(proveedor, cargaCruda, firma));
+		ResultadoWebhook resultado = procesarWebhook.procesar(new ComandoProcesarWebhook(
+				proveedor, cargaCruda,
+				firmaEfectiva(firma, timestampBinance, nonceBinance, firmaBinance)));
 		return new WebhookResponse(resultado.name());
+	}
+
+	/**
+	 * Binance Pay firma con TRES headers (timestamp, nonce, firma RSA); el
+	 * puerto recibe UNA firma, así que aquí se componen como
+	 * {@code timestamp|nonce|firmaBase64} y el adaptador los descompone
+	 * (HU-021). Los demás proveedores siguen usando X-Firma tal cual. Si
+	 * falta alguna parte, la firma compuesta simplemente no validará (401) —
+	 * nunca se lanza desde aquí.
+	 */
+	static String firmaEfectiva(String xFirma, String timestamp, String nonce,
+			String firmaBinance) {
+		if (firmaBinance == null || firmaBinance.isBlank()) {
+			return xFirma;
+		}
+		return timestamp + "|" + nonce + "|" + firmaBinance;
 	}
 
 	public record WebhookResponse(String resultado) {
