@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>25</java.version>
-		<archunit.version>1.4.1</archunit.version>
+		<archunit.version>1.4.2</archunit.version>
 		<jacoco.version>0.8.13</jacoco.version>
 		<pitest.version>1.19.1</pitest.version>
 		<pitest-junit5.version>1.2.2</pitest-junit5.version>
