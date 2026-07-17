@@ -75,7 +75,7 @@ class LiquidacionesApiTest {
 				.andExpect(jsonPath("$.comisionRampa").value(800))
 				.andExpect(jsonPath("$.tasaCambioSimulada").value(4150))
 				.andExpect(jsonPath("$.cuentaDestinoDescripcion").value(
-						org.hamcrest.Matchers.containsString("NEQUI")))
+						org.hamcrest.Matchers.containsString("Nequi")))
 				.andExpect(jsonPath("$.referenciaProveedor").value(
 						org.hamcrest.Matchers.startsWith("RAMPA-SIM-")))
 				.andExpect(jsonPath("$.montoNetoComercio").value(96699))
@@ -288,7 +288,7 @@ class LiquidacionesApiTest {
 								{
 								  "razonSocial": "Tienda %s",
 								  "nit": "%s",
-								  "cuentaLiquidacion": {"tipo": "NEQUI", "numero": "3001234567", "titular": "Tienda %s"},
+								  "cuentaLiquidacion": {"banco": "Nequi", "tipo": "AHORROS", "numero": "3001234567", "titular": "Tienda %s"},
 								  "credenciales": {"email": "%s", "contrasena": "secreta-12345678"}
 								}
 								""".formatted(nit, nit, nit, email)))

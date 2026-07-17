@@ -1,9 +1,12 @@
 package com.pasarela.comercios.dominio.modelo;
 
-/** Tipos de cuenta donde el proveedor liquida los COP al comercio. */
+/**
+ * Tipo de la cuenta donde el proveedor liquida los COP. El banco/billetera
+ * vive aparte en {@link CuentaLiquidacion#banco()} (HU-027): las billeteras
+ * (Nequi, Daviplata...) se manejan internamente como AHORROS.
+ */
 public enum TipoCuenta {
 
-	NEQUI,
 	AHORROS,
 	CORRIENTE
 

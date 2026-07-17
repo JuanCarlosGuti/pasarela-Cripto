@@ -14,6 +14,7 @@ public interface RegistrarComercioUseCase {
 	record ComandoRegistrarComercio(
 			String razonSocial,
 			String nit,
+			String bancoCuenta,
 			String tipoCuenta,
 			String numeroCuenta,
 			String titularCuenta,

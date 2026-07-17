@@ -11,7 +11,7 @@ public interface ConsultorDeCuentaLiquidacion {
 
 	DatosCuentaLiquidacion obtener(IdComercio comercioId);
 
-	record DatosCuentaLiquidacion(String tipoCuenta, String numero, String titular) {
+	record DatosCuentaLiquidacion(String banco, String tipoCuenta, String numero, String titular) {
 	}
 
 }

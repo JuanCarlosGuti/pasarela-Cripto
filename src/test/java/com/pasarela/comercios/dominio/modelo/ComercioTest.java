@@ -25,7 +25,7 @@ class ComercioTest {
 	private static final Instant DESPUES = AHORA.plusSeconds(3600);
 	private static final Nit NIT = Nit.de("899999068-1");
 	private static final CuentaLiquidacion CUENTA = new CuentaLiquidacion(
-			TipoCuenta.NEQUI, "3001234567", "Tienda La Esquina SAS");
+			"Nequi", TipoCuenta.AHORROS, "3001234567", "Tienda La Esquina SAS");
 
 	@Nested
 	class Registro {
@@ -314,8 +314,9 @@ class ComercioTest {
 		@Test
 		void crear_conDatosCompletos_esValida() {
 			CuentaLiquidacion cuenta = new CuentaLiquidacion(
-					TipoCuenta.AHORROS, "12345678901", "Tienda SAS");
+					"Bancolombia", TipoCuenta.AHORROS, "12345678901", "Tienda SAS");
 
+			assertThat(cuenta.banco()).isEqualTo("Bancolombia");
 			assertThat(cuenta.tipo()).isEqualTo(TipoCuenta.AHORROS);
 			assertThat(cuenta.numero()).isEqualTo("12345678901");
 			assertThat(cuenta.titular()).isEqualTo("Tienda SAS");
@@ -323,17 +324,19 @@ class ComercioTest {
 
 		@Test
 		void crear_conDatosFaltantes_lanzaExcepcion() {
-			assertThatThrownBy(() -> new CuentaLiquidacion(null, "3001234567", "Tienda"))
+			assertThatThrownBy(() -> new CuentaLiquidacion(" ", TipoCuenta.AHORROS, "3001234567", "Tienda"))
 					.isInstanceOf(ComercioInvalidoException.class);
-			assertThatThrownBy(() -> new CuentaLiquidacion(TipoCuenta.NEQUI, " ", "Tienda"))
+			assertThatThrownBy(() -> new CuentaLiquidacion("Nequi", null, "3001234567", "Tienda"))
 					.isInstanceOf(ComercioInvalidoException.class);
-			assertThatThrownBy(() -> new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", null))
+			assertThatThrownBy(() -> new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, " ", "Tienda"))
+					.isInstanceOf(ComercioInvalidoException.class);
+			assertThatThrownBy(() -> new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", null))
 					.isInstanceOf(ComercioInvalidoException.class);
 		}
 
 		@Test
 		void crear_conNumeroNoNumerico_lanzaExcepcion() {
-			assertThatThrownBy(() -> new CuentaLiquidacion(TipoCuenta.NEQUI, "30012ABC67", "Tienda"))
+			assertThatThrownBy(() -> new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "30012ABC67", "Tienda"))
 					.isInstanceOf(ComercioInvalidoException.class)
 					.hasMessageContaining("número");
 		}

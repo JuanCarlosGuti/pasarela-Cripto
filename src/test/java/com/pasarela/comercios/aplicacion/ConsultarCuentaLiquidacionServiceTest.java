@@ -37,7 +37,7 @@ class ConsultarCuentaLiquidacionServiceTest {
 		servicio = new ConsultarCuentaLiquidacionService(repositorio);
 		comercio = Comercio.registrar(
 				"Tienda Doña Rosa", Nit.de("899999068-1"),
-				new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", "Doña Rosa"),
+				new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", "Doña Rosa"),
 				AHORA.minusSeconds(3600));
 	}
 
@@ -47,7 +47,8 @@ class ConsultarCuentaLiquidacionServiceTest {
 
 		DatosCuentaLiquidacion datos = servicio.obtener(comercio.id());
 
-		assertThat(datos.tipoCuenta()).isEqualTo("NEQUI");
+		assertThat(datos.banco()).isEqualTo("Nequi");
+		assertThat(datos.tipoCuenta()).isEqualTo("AHORROS");
 		assertThat(datos.numero()).isEqualTo("3001234567");
 		assertThat(datos.titular()).isEqualTo("Doña Rosa");
 	}

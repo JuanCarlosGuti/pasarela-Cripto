@@ -479,6 +479,21 @@ trabajar la cola de verificación desde el panel (soporte de HUF-012 del front).
 - Un estado inexistente responde 400 con mensaje; rol COMERCIO recibe 403;
   sin token, 401. `GET /api/comercios/{id}` conserva su aislamiento (HU-006).
 
+### ✅ HU-027 — Banco de la cuenta de liquidación + cola paginada
+
+**Como** Plataforma **quiero** saber en QUÉ banco/billetera liquida cada
+comercio y paginar la cola del admin **para** estar lista para el payout real
+(el proveedor de rampa exige el banco) y para que la cola escale.
+
+**Criterios de aceptación:**
+- `CuentaLiquidacion` separa **banco** (Nequi, Bancolombia...) de **tipo**
+  (solo AHORROS|CORRIENTE); las billeteras se registran como AHORROS por
+  convención. Migración V12 mapea los datos existentes (NEQUI → banco
+  'Nequi' + tipo AHORROS).
+- `GET /api/comercios` pagina con `pagina/tamano` (respuesta
+  `{comercios, totalElementos, pagina, tamano}`, tope 100 por página).
+- El desglose de la rampa simulada (HU-025) describe el destino por banco.
+
 ---
 
 ## Épica E10 — Piloto *(Sprint 8 / Fase 10)*
@@ -517,7 +532,7 @@ de un problema antes que el comercio.
 | 4 | Fase 5 | HU-010, HU-011, HU-012, HU-013 |
 | 5 | Fases 6-7 | HU-014, HU-015, HU-016, HU-017 |
 | 6 | Fase 8 | HU-018, HU-019, HU-020 |
-| 7 | Fase 9 | T-007, HU-021, HU-022, HU-025, HU-026 |
+| 7 | Fase 9 | T-007, HU-021, HU-022, HU-025, HU-026, HU-027 |
 | 8 | Fase 10 | HU-023, HU-024 |
 
 > **Cómo usar este backlog:** al iniciar una historia, cambiar ⬜ → 🔵 y crear la rama

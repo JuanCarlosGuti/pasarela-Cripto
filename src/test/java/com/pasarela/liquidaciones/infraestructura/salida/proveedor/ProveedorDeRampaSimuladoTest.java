@@ -23,7 +23,7 @@ class ProveedorDeRampaSimuladoTest {
 	@Test
 	void convierte_cobrandoLaComisionDeRampaSobreElBruto() {
 		DatosCuentaLiquidacion cuenta = new DatosCuentaLiquidacion(
-				"NEQUI", "3001234567", "Doña Rosa");
+				"Nequi", "AHORROS", "3001234567", "Doña Rosa");
 
 		ResultadoConversionRampa resultado = simulador.convertir(Dinero.cop(100_000), cuenta);
 
@@ -34,7 +34,7 @@ class ProveedorDeRampaSimuladoTest {
 	@Test
 	void devuelveLaTasaDeCambioConfigurada() {
 		DatosCuentaLiquidacion cuenta = new DatosCuentaLiquidacion(
-				"NEQUI", "3001234567", "Doña Rosa");
+				"Nequi", "AHORROS", "3001234567", "Doña Rosa");
 
 		ResultadoConversionRampa resultado = simulador.convertir(Dinero.cop(100_000), cuenta);
 
@@ -44,7 +44,7 @@ class ProveedorDeRampaSimuladoTest {
 	@Test
 	void laReferenciaTieneFormatoDeSimulacion_yNuncaSeRepite() {
 		DatosCuentaLiquidacion cuenta = new DatosCuentaLiquidacion(
-				"NEQUI", "3001234567", "Doña Rosa");
+				"Nequi", "AHORROS", "3001234567", "Doña Rosa");
 
 		ResultadoConversionRampa uno = simulador.convertir(Dinero.cop(100_000), cuenta);
 		ResultadoConversionRampa otro = simulador.convertir(Dinero.cop(100_000), cuenta);
@@ -56,12 +56,12 @@ class ProveedorDeRampaSimuladoTest {
 	@Test
 	void laDescripcionDelDestinoEnmascaraElNumeroDeCuenta() {
 		DatosCuentaLiquidacion cuenta = new DatosCuentaLiquidacion(
-				"NEQUI", "3001234567", "Doña Rosa");
+				"Nequi", "AHORROS", "3001234567", "Doña Rosa");
 
 		ResultadoConversionRampa resultado = simulador.convertir(Dinero.cop(100_000), cuenta);
 
 		assertThat(resultado.cuentaDestinoDescripcion())
-				.contains("NEQUI").contains("4567").contains("Doña Rosa")
+				.contains("Nequi").contains("4567").contains("Doña Rosa")
 				.doesNotContain("3001234567");
 	}
 

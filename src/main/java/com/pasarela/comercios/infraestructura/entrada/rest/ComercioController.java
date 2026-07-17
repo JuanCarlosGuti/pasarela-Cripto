@@ -56,6 +56,7 @@ public class ComercioController {
 		Comercio comercio = registrarComercio.registrar(new ComandoRegistrarComercio(
 				solicitud.razonSocial(),
 				solicitud.nit(),
+				solicitud.cuentaLiquidacion().banco(),
 				solicitud.cuentaLiquidacion().tipo(),
 				solicitud.cuentaLiquidacion().numero(),
 				solicitud.cuentaLiquidacion().titular(),
@@ -68,14 +69,23 @@ public class ComercioController {
 	}
 
 	/**
-	 * Cola de verificación del Admin (HU-026): todos los comercios o solo
-	 * los de un estado (?estado=PENDIENTE). Solo rol ADMIN (ver
-	 * ConfiguracionDeSeguridadHttp); un estado inexistente responde 400.
+	 * Cola de verificación del Admin (HU-026, paginada desde HU-027): todos
+	 * los comercios o solo los de un estado (?estado=PENDIENTE). Solo rol
+	 * ADMIN (ver ConfiguracionDeSeguridadHttp); estado inexistente → 400.
 	 */
 	@GetMapping
-	public List<ComercioResponse> listar(
-			@RequestParam(required = false) String estado) {
-		return consultarComercios.listar(estado).stream().map(ComercioResponse::de).toList();
+	public PaginaComerciosResponse listar(
+			@RequestParam(required = false) String estado,
+			@RequestParam(defaultValue = "0") int pagina,
+			@RequestParam(defaultValue = "20") int tamano) {
+		var encontrados = consultarComercios.listar(estado, pagina, tamano);
+		return new PaginaComerciosResponse(
+				encontrados.comercios().stream().map(ComercioResponse::de).toList(),
+				encontrados.totalElementos(), encontrados.pagina(), encontrados.tamano());
+	}
+
+	public record PaginaComerciosResponse(
+			List<ComercioResponse> comercios, long totalElementos, int pagina, int tamano) {
 	}
 
 	/**

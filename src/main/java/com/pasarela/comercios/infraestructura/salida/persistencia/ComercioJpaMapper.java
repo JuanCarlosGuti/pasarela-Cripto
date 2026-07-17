@@ -21,6 +21,7 @@ public class ComercioJpaMapper {
 				comercio.razonSocial(),
 				comercio.nit().completo(),
 				comercio.estadoVerificacion().name(),
+				comercio.cuentaLiquidacion().banco(),
 				comercio.cuentaLiquidacion().tipo().name(),
 				comercio.cuentaLiquidacion().numero(),
 				comercio.cuentaLiquidacion().titular(),
@@ -37,6 +38,7 @@ public class ComercioJpaMapper {
 				entidad.razonSocial(),
 				Nit.de(entidad.nit()),
 				new CuentaLiquidacion(
+						entidad.cuentaBanco(),
 						TipoCuenta.valueOf(entidad.cuentaTipo()),
 						entidad.cuentaNumero(),
 						entidad.cuentaTitular()),

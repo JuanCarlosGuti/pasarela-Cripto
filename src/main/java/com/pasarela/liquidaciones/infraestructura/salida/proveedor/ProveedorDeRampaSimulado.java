@@ -42,7 +42,8 @@ public class ProveedorDeRampaSimulado implements ProveedorDeRampaPort {
 	private static String describir(DatosCuentaLiquidacion cuenta) {
 		String numero = cuenta.numero();
 		String ultimosCuatro = numero.length() > 4 ? numero.substring(numero.length() - 4) : numero;
-		return "%s ••••%s — %s".formatted(cuenta.tipoCuenta(), ultimosCuatro, cuenta.titular());
+		// el banco identifica mejor el destino que el tipo (HU-027)
+		return "%s ••••%s — %s".formatted(cuenta.banco(), ultimosCuatro, cuenta.titular());
 	}
 
 }

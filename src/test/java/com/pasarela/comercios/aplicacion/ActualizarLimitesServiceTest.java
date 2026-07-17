@@ -51,7 +51,7 @@ class ActualizarLimitesServiceTest {
 				repositorio, bitacora, Clock.fixed(AHORA, ZoneOffset.UTC));
 		comercio = Comercio.registrar(
 				"Tienda", Nit.de("899999068-1"),
-				new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", "Tienda"),
+				new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", "Tienda"),
 				AHORA.minusSeconds(3600));
 	}
 
