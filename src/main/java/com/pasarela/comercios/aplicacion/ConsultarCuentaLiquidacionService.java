@@ -27,7 +27,8 @@ public class ConsultarCuentaLiquidacionService implements ConsultorDeCuentaLiqui
 				.orElseThrow(() -> new ComercioNoEncontradoException(
 						"No existe un comercio con id " + comercioId.valor()));
 		CuentaLiquidacion cuenta = comercio.cuentaLiquidacion();
-		return new DatosCuentaLiquidacion(cuenta.tipo().name(), cuenta.numero(), cuenta.titular());
+		return new DatosCuentaLiquidacion(
+				cuenta.banco(), cuenta.tipo().name(), cuenta.numero(), cuenta.titular());
 	}
 
 }

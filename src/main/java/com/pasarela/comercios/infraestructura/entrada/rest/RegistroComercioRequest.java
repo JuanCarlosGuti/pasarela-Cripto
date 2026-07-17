@@ -28,6 +28,8 @@ public record RegistroComercioRequest(
 	}
 
 	public record CuentaLiquidacionRequest(
+			@NotBlank(message = "El banco o billetera es obligatorio")
+			String banco,
 			@NotBlank(message = "El tipo de cuenta es obligatorio")
 			String tipo,
 			@NotBlank(message = "El número de cuenta es obligatorio")

@@ -47,7 +47,7 @@ class DecidirVerificacionServiceTest {
 				repositorio, Clock.fixed(AHORA, ZoneOffset.UTC));
 		pendiente = Comercio.registrar(
 				"Tienda", Nit.de("899999068-1"),
-				new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", "Tienda"),
+				new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", "Tienda"),
 				AHORA.minusSeconds(3600));
 	}
 

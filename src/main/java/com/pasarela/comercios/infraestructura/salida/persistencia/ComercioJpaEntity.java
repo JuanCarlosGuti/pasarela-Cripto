@@ -26,6 +26,9 @@ public class ComercioJpaEntity {
 	@Column(name = "estado_verificacion", nullable = false, length = 20)
 	private String estadoVerificacion;
 
+	@Column(name = "cuenta_banco", nullable = false, length = 50)
+	private String cuentaBanco;
+
 	@Column(name = "cuenta_tipo", nullable = false, length = 20)
 	private String cuentaTipo;
 
@@ -55,13 +58,14 @@ public class ComercioJpaEntity {
 	}
 
 	ComercioJpaEntity(UUID id, String razonSocial, String nit, String estadoVerificacion,
-			String cuentaTipo, String cuentaNumero, String cuentaTitular, Instant registradoEn,
-			String motivoDecision, Instant decisionEn,
+			String cuentaBanco, String cuentaTipo, String cuentaNumero, String cuentaTitular,
+			Instant registradoEn, String motivoDecision, Instant decisionEn,
 			BigDecimal limitePorTransaccion, BigDecimal limiteMensual) {
 		this.id = id;
 		this.razonSocial = razonSocial;
 		this.nit = nit;
 		this.estadoVerificacion = estadoVerificacion;
+		this.cuentaBanco = cuentaBanco;
 		this.cuentaTipo = cuentaTipo;
 		this.cuentaNumero = cuentaNumero;
 		this.cuentaTitular = cuentaTitular;
@@ -86,6 +90,10 @@ public class ComercioJpaEntity {
 
 	String estadoVerificacion() {
 		return estadoVerificacion;
+	}
+
+	String cuentaBanco() {
+		return cuentaBanco;
 	}
 
 	String cuentaTipo() {

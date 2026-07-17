@@ -262,7 +262,8 @@ class SeguridadApiTest {
 				  "razonSocial": "Tienda %s",
 				  "nit": "%s",
 				  "cuentaLiquidacion": {
-				    "tipo": "NEQUI",
+				    "banco": "Nequi",
+    "tipo": "AHORROS",
 				    "numero": "3001234567",
 				    "titular": "Tienda %s"
 				  },

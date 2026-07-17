@@ -64,8 +64,21 @@ class ComerciosAdminApiTest {
 		// devuelto viene en ese estado
 		JsonNode pendientes = listar("?estado=PENDIENTE");
 		assertThat(idsDe(pendientes)).contains(pendiente).doesNotContain(verificado);
-		pendientes.forEach(comercio ->
+		pendientes.get("comercios").forEach(comercio ->
 				assertThat(comercio.get("estadoVerificacion").asText()).isEqualTo("PENDIENTE"));
+	}
+
+	@Test
+	void laPaginacionRespetaTamanoYTotal_HU027() throws Exception {
+		registrar("902110048-7", "pag1@admin-lista.co");
+		registrar("902110049-4", "pag2@admin-lista.co");
+
+		JsonNode pagina = listar("?tamano=1");
+
+		assertThat(pagina.get("comercios")).hasSize(1);
+		assertThat(pagina.get("totalElementos").asLong()).isGreaterThanOrEqualTo(2);
+		assertThat(pagina.get("tamano").asInt()).isEqualTo(1);
+		assertThat(pagina.get("pagina").asInt()).isZero();
 	}
 
 	@Test
@@ -101,9 +114,9 @@ class ComerciosAdminApiTest {
 		return json.readTree(respuesta.getResponse().getContentAsString());
 	}
 
-	private static List<String> idsDe(JsonNode lista) {
+	private static List<String> idsDe(JsonNode pagina) {
 		List<String> ids = new ArrayList<>();
-		lista.forEach(comercio -> ids.add(comercio.get("id").asText()));
+		pagina.get("comercios").forEach(comercio -> ids.add(comercio.get("id").asText()));
 		return ids;
 	}
 
@@ -114,7 +127,7 @@ class ComerciosAdminApiTest {
 								{
 								  "razonSocial": "Tienda %s",
 								  "nit": "%s",
-								  "cuentaLiquidacion": {"tipo": "NEQUI", "numero": "3001234567", "titular": "Tienda %s"},
+								  "cuentaLiquidacion": {"banco": "Nequi", "tipo": "AHORROS", "numero": "3001234567", "titular": "Tienda %s"},
 								  "credenciales": {"email": "%s", "contrasena": "secreta-12345678"}
 								}
 								""".formatted(nit, nit, nit, email)))

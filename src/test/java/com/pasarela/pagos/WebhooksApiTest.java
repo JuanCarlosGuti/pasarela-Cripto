@@ -234,7 +234,7 @@ class WebhooksApiTest {
 								{
 								  "razonSocial": "Tienda %s",
 								  "nit": "%s",
-								  "cuentaLiquidacion": {"tipo": "NEQUI", "numero": "3001234567", "titular": "Tienda %s"},
+								  "cuentaLiquidacion": {"banco": "Nequi", "tipo": "AHORROS", "numero": "3001234567", "titular": "Tienda %s"},
 								  "credenciales": {"email": "%s", "contrasena": "secreta-12345678"}
 								}
 								""".formatted(nit, nit, nit, email)))

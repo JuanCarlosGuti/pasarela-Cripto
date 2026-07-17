@@ -98,7 +98,7 @@ class ComercioRepositorioJpaTest {
 		return Comercio.registrar(
 				"Tienda " + nit,
 				Nit.de(nit),
-				new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", "Tienda " + nit),
+				new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", "Tienda " + nit),
 				AHORA);
 	}
 

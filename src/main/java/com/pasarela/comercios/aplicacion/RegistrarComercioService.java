@@ -39,6 +39,7 @@ public class RegistrarComercioService implements RegistrarComercioUseCase {
 	public Comercio registrar(ComandoRegistrarComercio comando) {
 		Nit nit = Nit.de(comando.nit());
 		CuentaLiquidacion cuenta = new CuentaLiquidacion(
+				comando.bancoCuenta(),
 				tipoDeCuenta(comando.tipoCuenta()),
 				comando.numeroCuenta(),
 				comando.titularCuenta());
@@ -59,7 +60,7 @@ public class RegistrarComercioService implements RegistrarComercioUseCase {
 			return TipoCuenta.valueOf(texto == null ? "" : texto.trim().toUpperCase());
 		} catch (IllegalArgumentException excepcion) {
 			throw new ComercioInvalidoException(
-					"El tipo de cuenta no es válido; use NEQUI, AHORROS o CORRIENTE");
+					"El tipo de cuenta no es válido; use AHORROS o CORRIENTE");
 		}
 	}
 

@@ -36,7 +36,7 @@ class RegistrarComercioServiceTest {
 
 	private static final Instant AHORA = Instant.parse("2026-07-08T10:00:00Z");
 	private static final ComandoRegistrarComercio COMANDO = new ComandoRegistrarComercio(
-			"Tienda La Esquina SAS", "899999068-1", "NEQUI", "3001234567",
+			"Tienda La Esquina SAS", "899999068-1", "Nequi", "AHORROS", "3001234567",
 			"Tienda La Esquina SAS", "dueno@tienda.co", "secreta123");
 
 	@Mock
@@ -65,7 +65,7 @@ class RegistrarComercioServiceTest {
 		assertThat(guardado.getValue().nit()).isEqualTo(Nit.de("899999068-1"));
 		assertThat(guardado.getValue().estadoVerificacion())
 				.isEqualTo(EstadoVerificacion.PENDIENTE);
-		assertThat(guardado.getValue().cuentaLiquidacion().tipo()).isEqualTo(TipoCuenta.NEQUI);
+		assertThat(guardado.getValue().cuentaLiquidacion().tipo()).isEqualTo(TipoCuenta.AHORROS);
 		assertThat(guardado.getValue().registradoEn()).isEqualTo(AHORA);
 		assertThat(registrado.puedeCobrar()).isFalse();
 	}
@@ -96,7 +96,7 @@ class RegistrarComercioServiceTest {
 	@Test
 	void registrar_conNitInvalido_propagaLaExcepcionDeDominio_sinTocarElRepositorio() {
 		ComandoRegistrarComercio comandoInvalido = new ComandoRegistrarComercio(
-				"Tienda", "899999068-2", "NEQUI", "3001234567", "Tienda",
+				"Tienda", "899999068-2", "Nequi", "AHORROS", "3001234567", "Tienda",
 				"dueno@tienda.co", "secreta123");
 
 		assertThatThrownBy(() -> servicio.registrar(comandoInvalido))
@@ -108,7 +108,7 @@ class RegistrarComercioServiceTest {
 	@Test
 	void registrar_conTipoDeCuentaDesconocido_lanzaExcepcionClara() {
 		ComandoRegistrarComercio comandoInvalido = new ComandoRegistrarComercio(
-				"Tienda", "899999068-1", "BILLETERA_MAGICA", "3001234567", "Tienda",
+				"Tienda", "899999068-1", "Nequi", "BILLETERA_MAGICA", "3001234567", "Tienda",
 				"dueno@tienda.co", "secreta123");
 
 		assertThatThrownBy(() -> servicio.registrar(comandoInvalido))

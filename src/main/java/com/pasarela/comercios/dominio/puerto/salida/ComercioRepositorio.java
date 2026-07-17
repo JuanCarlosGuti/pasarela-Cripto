@@ -18,10 +18,13 @@ public interface ComercioRepositorio {
 	/** Para impedir registros duplicados: el NIT es único en la plataforma. */
 	Optional<Comercio> buscarPorNit(Nit nit);
 
-	/** Todos los comercios, más recientes primero (HU-026, cola del admin). */
-	List<Comercio> listar();
+	/** Página de comercios, más recientes primero (HU-026/027, cola del admin). */
+	PaginaDeComercios listar(int pagina, int tamano);
 
-	/** Los comercios en un estado dado, más recientes primero (HU-026). */
-	List<Comercio> listarPorEstado(EstadoVerificacion estado);
+	/** Página de comercios en un estado dado, más recientes primero. */
+	PaginaDeComercios listarPorEstado(EstadoVerificacion estado, int pagina, int tamano);
+
+	record PaginaDeComercios(List<Comercio> comercios, long totalElementos) {
+	}
 
 }

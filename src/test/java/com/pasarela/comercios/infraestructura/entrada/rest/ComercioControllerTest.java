@@ -42,7 +42,8 @@ class ComercioControllerTest {
 			  "razonSocial": "Tienda La Esquina SAS",
 			  "nit": "899999068-1",
 			  "cuentaLiquidacion": {
-			    "tipo": "NEQUI",
+			    "banco": "Nequi",
+    "tipo": "AHORROS",
 			    "numero": "3001234567",
 			    "titular": "Tienda La Esquina SAS"
 			  },
@@ -121,7 +122,8 @@ class ComercioControllerTest {
 				{
 				  "nit": "899999068-1",
 				  "cuentaLiquidacion": {
-				    "tipo": "NEQUI",
+				    "banco": "Nequi",
+    "tipo": "AHORROS",
 				    "numero": "3001234567",
 				    "titular": "Tienda"
 				  },
@@ -193,7 +195,7 @@ class ComercioControllerTest {
 		return Comercio.registrar(
 				"Tienda La Esquina SAS",
 				Nit.de("899999068-1"),
-				new CuentaLiquidacion(TipoCuenta.NEQUI, "3001234567", "Tienda La Esquina SAS"),
+				new CuentaLiquidacion("Nequi", TipoCuenta.AHORROS, "3001234567", "Tienda La Esquina SAS"),
 				Instant.parse("2026-07-08T10:00:00Z"));
 	}
 
